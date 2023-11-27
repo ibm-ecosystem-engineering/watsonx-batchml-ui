@@ -24,11 +24,19 @@ export const DocumentListView: React.FunctionComponent<DocumentListViewProps> = 
 
                     return (
                         <div key={doc.id} style={{textAlign: 'left'}}>
-                            <a href={`/api${doc.url}`} target="_blank" rel="noopener noreferrer">{doc.name}</a>{desc}
+                            <a href={getDocumentUrl(doc.url)} target="_blank" rel="noopener noreferrer">{doc.name}</a>{desc}
                         </div>
                     )
                 })}
             </Stack>
         </div>
     )
+}
+
+const getDocumentUrl = (url: string): string => {
+    if (url.startsWith('http') || url.startsWith('//')) {
+        return url
+    }
+
+    return `/api${url}`
 }
