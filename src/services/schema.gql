@@ -2,49 +2,112 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-"""Collection"""
-type Collection {
-  collectionId: String!
-  description: String
+type Activity {
+  actor: String!
+  comment: String!
+  id: ID!
+  timestamp: String!
+  type: String!
+}
+
+type Address {
+  addressLine1: String!
+  addressLine2: String
+  canton: String!
+  city: String!
+  country: String!
+  postalCode: String!
+}
+
+type Dependent {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  birthDate: String!
+  gender: String!
+  father: Person
+  mother: Person
+  livesWithApplicant: Boolean!
+  relationshipToApplicant: FamilyAllowanceRelationship!
+  governmentId: String!
+}
+
+type Employee {
+  emailAddress: String!
+  employeeId: String!
+  firstName: String!
+  gender: String!
+  governmentId: String!
+  id: ID!
+  lastName: String!
+  mailingAddress: Address!
+  maritalStatus: FamilyAllowanceMaritalStatus!
+  phoneNumber: String!
+}
+
+type FamilyAllowance {
+  id: ID!
+  status: FamilyAllowanceStatus!
+  changeType: FamilyAllowanceType!
+  applicant: Employee!
+  spouse: Spouse
+  otherParents: [OtherParent!]
+  dependents: [Dependent!]!
+  requiredInformation: [RequiredInformation!]!
+  supportingDocuments: [FamilyAllowanceDocument!]!
+  history: [Activity!]!
+}
+
+"""Document that supports the Family Allowance Case"""
+type FamilyAllowanceDocument {
+  id: ID!
   name: String!
-}
-
-input CreateCollectionInput {
+  type: String!
+  url: String!
   description: String
-  name: String!
 }
 
-"""Document"""
-type Document {
-  documentId: String!
-  filename: String!
-  path: String
-  status: String!
+enum FamilyAllowanceEmploymentStatus {
+  Employed
+  SelfEmployed
+  Unemployed
 }
 
-type DocumentDetail {
-  metadata: [DocumentMetadata!]
-  pageContent: String!
+enum FamilyAllowanceMaritalStatus {
+  Divorced
+  Married
+  NotMarried
 }
 
-type DocumentMetadata {
-  key: String!
-  value: String!
+enum FamilyAllowanceRelationship {
+  Father
+  Mother
+  StepFather
+  StepMother
 }
 
-input GenerateInput {
-  collectionId: String
-  decoding_method: String
-  max_new_tokens: Float
-  min_new_tokens: Float
-  modelId: String
-  question: String!
-  repetition_penalty: Float
+enum FamilyAllowanceStatus {
+  Approved
+  Closed
+  NeedsInfo
+  ReadyForReview
+  Reviewed
 }
 
-type GenerateResultGraphql {
-  generatedText: String!
-  question: String!
+enum FamilyAllowanceStatusFilter {
+  All
+  Approved
+  Closed
+  NeedsInfo
+  ReadyForReview
+  Reviewed
+}
+
+enum FamilyAllowanceType {
+  Adoption
+  Birth
+  ChildAllowance
+  TrainingAllowance
 }
 
 """greeting"""
@@ -52,43 +115,64 @@ type Greeting {
   greeting: String!
 }
 
-"""Collections list"""
-type ListCollections {
-  collections: [Collection!]!
-}
-
-"""Documents list"""
-type ListDocuments {
-  count: Float!
-  documents: [Document!]!
-}
-
-input ListDocumentsInput {
-  collectionId: String
-  count: Float
-  statuses: [String!]
-}
-
 type Mutation {
-  createCollection(input: CreateCollectionInput!): Collection!
+  markFamilyAllowanceCaseReadyForReview(id: ID!): FamilyAllowance!
+  reviewFamilyAllowanceCase(id: ID!, input: ReviewInput!): FamilyAllowance!
+  updateRequiredInformation(caseId: ID!, completed: Boolean!, infoId: ID!): FamilyAllowance!
+}
+
+type OtherParent {
+  emailAddress: String!
+  employmentStatus: FamilyAllowanceEmploymentStatus!
+  firstName: String!
+  gender: String!
+  governmentId: String!
+  id: ID!
+  lastName: String!
+  mailingAddress: Address!
+  maritalStatus: FamilyAllowanceMaritalStatus!
+  phoneNumber: String!
+}
+
+type Person {
+  emailAddress: String!
+  firstName: String!
+  gender: String!
+  governmentId: String!
+  id: ID!
+  lastName: String!
+  mailingAddress: Address!
+  maritalStatus: FamilyAllowanceMaritalStatus!
+  phoneNumber: String!
 }
 
 type Query {
-  generate(input: GenerateInput!): GenerateResultGraphql!
+  getFamilyAllowanceCase(id: ID!): FamilyAllowance!
   helloWorld: Greeting!
-  listCollections: ListCollections!
-  listDocuments(input: ListDocumentsInput!): ListDocuments!
-  query(input: QueryDocumentsInput!): QueryDocuments!
+  listFamilyAllowanceCases(status: FamilyAllowanceStatusFilter): [FamilyAllowance!]!
 }
 
-type QueryDocuments {
-  count: Float!
-  documents: [DocumentDetail!]!
+type RequiredInformation {
+  completed: Boolean!
+  description: String!
+  id: ID!
 }
 
-input QueryDocumentsInput {
-  collectionId: String
-  count: Float
-  filter: String
-  naturalLanguageQuery: String!
+input ReviewInput {
+  comment: String
+  requiredInformation: [String!]
+}
+
+type Spouse {
+  emailAddress: String!
+  employmentStatus: FamilyAllowanceEmploymentStatus!
+  firstName: String!
+  gender: String!
+  governmentId: String!
+  id: ID!
+  lastName: String!
+  mailingAddress: Address!
+  maritalStatus: FamilyAllowanceMaritalStatus!
+  marriedToApplicant: Boolean!
+  phoneNumber: String!
 }

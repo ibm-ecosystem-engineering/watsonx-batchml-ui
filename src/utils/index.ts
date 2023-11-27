@@ -6,3 +6,4 @@ export * from './first';
 export * from './stream-to-buffer';
 export * from './url-to-stream';
 export * from './event-handler';
+export * from './formatters';

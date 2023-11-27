@@ -55,8 +55,8 @@ export const DataTable: React.FunctionComponent<DataTableProps<any[]>> = <ColTyp
                     <Table {...getTableProps()} useZebraStyles size='md'>
                         <TableHead>
                             <TableRow>
-                                {headers.map((header) => (
-                                    <TableHeader {...mapHeaderProps(getHeaderProps({ header }))}>
+                                {headers.map((header: DataTableHeader) => (
+                                    <TableHeader key={header.key} {...mapHeaderProps(getHeaderProps({ header }))}>
                                         {header.header}
                                     </TableHeader>
                                 ))}
@@ -66,7 +66,7 @@ export const DataTable: React.FunctionComponent<DataTableProps<any[]>> = <ColTyp
                             {rows.map((row) => (
                                 <TableRow key={row.id} onClick={() => onRowClick(row.id)}>
                                     {row.cells.map((cell) => (
-                                        <TableCell key={cell.id}>{cell.value}</TableCell>
+                                        <TableCell key={`cell-${cell.id}`}>{cell.value}</TableCell>
                                     ))}
                                 </TableRow>
                             ))}
