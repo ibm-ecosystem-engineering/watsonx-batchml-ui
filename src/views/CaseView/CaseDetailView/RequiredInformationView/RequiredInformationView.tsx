@@ -1,11 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import React, {FormEvent} from 'react';
-import {Button, Checkbox, Form, FormGroup} from "@carbon/react";
+import {Checkbox, Form, FormGroup} from "@carbon/react";
 import {useSetAtom} from "jotai";
 
 import {familyAllowanceCaseAtom} from "../../../../atoms";
-import {Stack} from "../../../../components";
+import {EnabledButton, Stack} from "../../../../components";
 import {FamilyAllowanceStatus, RequiredInformationModel} from "../../../../models";
 import {familyAllowanceCaseApi, FamilyAllowanceCaseApi} from "../../../../services";
 
@@ -13,14 +13,6 @@ export interface RequiredInformationViewProps {
     caseId: string;
     status: FamilyAllowanceStatus;
     requiredInformation?: RequiredInformationModel[];
-}
-
-const MyButton = ({enabled}: {enabled: boolean}) => {
-    if (!enabled) {
-        return (<></>)
-    }
-
-    return (<Button type="submit" size="sm">Submit for review</Button>)
 }
 
 export const RequiredInformationView: React.FunctionComponent<RequiredInformationViewProps> = ({status, caseId, requiredInformation}: RequiredInformationViewProps) => {
@@ -71,7 +63,7 @@ export const RequiredInformationView: React.FunctionComponent<RequiredInformatio
                     <FormGroup legendText="Required information" style={{textAlign: 'left', padding: '10px 0'}}>
                         {data.map(info => (<RequiredInfoCheckbox key={info.id} info={info} enabled={enabled} />))}
                     </FormGroup>
-                    <MyButton enabled={enabled} />
+                    <EnabledButton enabled={enabled}>Submit for review</EnabledButton>
                 </Stack>
             </Form>
         </div>

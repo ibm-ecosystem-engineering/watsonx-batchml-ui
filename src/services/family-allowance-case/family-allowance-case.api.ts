@@ -10,4 +10,6 @@ export abstract class FamilyAllowanceCaseApi {
 
     abstract markFamilyAllowanceCaseReadyForReview(id: string): Promise<FamilyAllowanceModel>;
 
+    abstract markFamilyAllowanceCaseBookingsComplete(id: string, comment?: string): Promise<FamilyAllowanceModel>
+
 }

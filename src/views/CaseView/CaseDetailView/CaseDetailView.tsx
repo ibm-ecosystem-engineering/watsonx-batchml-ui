@@ -9,6 +9,7 @@ import {SupportingDocumentsView} from "./SupportingDocumentsView";
 import {CaseHeadingView} from "./CaseHeadingView";
 import {ApplicantPanel, DependentsPanel, OtherParentsPanel, SpousePanel} from "./Panels";
 import {FamilyAllowanceModel} from "../../../models";
+import {MarkBookingsComplete} from "./MarkBookingsComplete";
 
 export interface CaseDetailViewProps {
     familyAllowanceCase: FamilyAllowanceModel
@@ -21,6 +22,7 @@ export const CaseDetailView: React.FunctionComponent<CaseDetailViewProps> = (pro
         <div>
             <CaseHeadingView status={data.status} changeType={data.changeType} />
             <RequiredInformationView caseId={data.id} status={data.status} requiredInformation={data.requiredInformation} />
+            <MarkBookingsComplete caseId={data.id} status={data.status} />
             <Tabs>
                 <TabList aria-label="Family Application Case sections">
                     <Tab>Applicant</Tab>

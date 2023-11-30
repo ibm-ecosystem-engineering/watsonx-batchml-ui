@@ -20,16 +20,16 @@ type Address {
 }
 
 type Dependent {
-  id: ID!
-  firstName: String!
-  lastName: String!
   birthDate: String!
-  gender: String!
   father: Person
-  mother: Person
-  livesWithApplicant: Boolean!
-  relationshipToApplicant: FamilyAllowanceRelationship!
+  firstName: String!
+  gender: String!
   governmentId: String!
+  id: ID!
+  lastName: String!
+  livesWithApplicant: Boolean!
+  mother: Person
+  relationshipToApplicant: FamilyAllowanceRelationship!
 }
 
 type Employee {
@@ -46,25 +46,26 @@ type Employee {
 }
 
 type FamilyAllowance {
-  id: ID!
-  status: FamilyAllowanceStatus!
-  changeType: FamilyAllowanceType!
   applicant: Employee!
-  spouse: Spouse
-  otherParents: [OtherParent!]
+  changeType: FamilyAllowanceType!
+  compensationOfficeId: String
   dependents: [Dependent!]!
-  requiredInformation: [RequiredInformation!]!
-  supportingDocuments: [FamilyAllowanceDocument!]!
   history: [Activity!]!
+  id: ID!
+  otherParents: [OtherParent!]
+  requiredInformation: [RequiredInformation!]!
+  spouse: Spouse
+  status: FamilyAllowanceStatus!
+  supportingDocuments: [FamilyAllowanceDocument!]!
 }
 
 """Document that supports the Family Allowance Case"""
 type FamilyAllowanceDocument {
+  description: String
   id: ID!
   name: String!
   type: String!
   url: String!
-  description: String
 }
 
 enum FamilyAllowanceEmploymentStatus {
@@ -89,7 +90,11 @@ enum FamilyAllowanceRelationship {
 enum FamilyAllowanceStatus {
   Approved
   Closed
+  CompletedBookings
+  Denied
   NeedsInfo
+  PendingApproval
+  PendingBookings
   ReadyForReview
   Reviewed
 }
@@ -98,7 +103,11 @@ enum FamilyAllowanceStatusFilter {
   All
   Approved
   Closed
+  CompletedBookings
+  Denied
   NeedsInfo
+  PendingApproval
+  PendingBookings
   ReadyForReview
   Reviewed
 }
@@ -116,6 +125,7 @@ type Greeting {
 }
 
 type Mutation {
+  markFamilyAllowanceCaseBookingsComplete(comment: String, id: ID!): FamilyAllowance!
   markFamilyAllowanceCaseReadyForReview(id: ID!): FamilyAllowance!
   reviewFamilyAllowanceCase(id: ID!, input: ReviewInput!): FamilyAllowance!
   updateRequiredInformation(caseId: ID!, completed: Boolean!, infoId: ID!): FamilyAllowance!

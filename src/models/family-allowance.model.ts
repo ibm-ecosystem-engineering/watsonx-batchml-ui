@@ -32,19 +32,27 @@ export interface ActivityModel {
 }
 
 export enum FamilyAllowanceStatus {
-    ReadyForReview = 'Ready for Review',
-    NeedsInfo = 'Needs Info',
+    ReadyForReview = 'ReadyForReview',
+    NeedsInfo = 'NeedsInfo',
     Reviewed = 'Reviewed',
+    PendingApproval = 'PendingApproval',
     Approved = 'Approved',
+    Denied = 'Denied',
+    PendingBookings = 'PendingBookings',
+    CompletedBookings = 'CompletedBookings',
     Closed = 'Closed'
 }
 
 export enum FamilyAllowanceStatusFilter {
     All = 'All',
-    ReadyForReview = 'Ready for Review',
-    NeedsInfo = 'Needs Info',
+    ReadyForReview = 'ReadyForReview',
+    NeedsInfo = 'NeedsInfo',
     Reviewed = 'Reviewed',
+    PendingApproval = 'PendingApproval',
     Approved = 'Approved',
+    Denied = 'Denied',
+    PendingBookings = 'PendingBookings',
+    CompletedBookings = 'CompletedBookings',
     Closed = 'Closed'
 }
 

@@ -384,6 +384,101 @@ mutation MarkReadyForReview($id: ID!) {
 `
 type ReturnTypeMutationReadyForReview = {markFamilyAllowanceCaseReadyForReview: FamilyAllowanceModel}
 
+const MUTATION_MARK_BOOKINGS_COMPLETE = gql`
+mutation MarkBookingsComplete($id: ID!, $comment: String) {
+    markFamilyAllowanceCaseBookingsComplete(id: $id, comment: $comment) {
+        id
+        status
+        changeType
+        applicant {
+            id
+            firstName
+            lastName
+            emailAddress
+            phoneNumber
+            employeeId
+            gender
+            maritalStatus
+            mailingAddress {
+                addressLine1
+                addressLine2
+                canton
+                city
+                country
+                postalCode
+            }
+        }
+        spouse {
+            id
+            firstName
+            lastName
+            emailAddress
+            phoneNumber
+            gender
+            maritalStatus
+            mailingAddress {
+                addressLine1
+                addressLine2
+                canton
+                city
+                country
+                postalCode
+            }
+            employmentStatus
+            marriedToApplicant
+        }
+        otherParents {
+            id
+            firstName
+            lastName
+            emailAddress
+            phoneNumber
+            gender
+            maritalStatus
+            mailingAddress {
+                addressLine1
+                addressLine2
+                canton
+                city
+                country
+                postalCode
+            }
+            employmentStatus
+        }
+        dependents {
+            id
+            firstName
+            lastName
+            birthDate
+            gender
+            father {
+                firstName
+                lastName
+            }
+            mother {
+                firstName
+                lastName
+            }
+            livesWithApplicant
+            relationshipToApplicant
+        }
+        requiredInformation {
+            id
+            description
+            completed
+        }
+        supportingDocuments {
+            id
+            name
+            url
+            type
+            description
+        }
+    }
+}
+`
+type ReturnTypeMutationBookingsComplete = {markFamilyAllowanceCaseBookingsComplete: FamilyAllowanceModel}
+
 
 export class FamilyAllowanceCaseGraphql implements FamilyAllowanceCaseApi {
     client: ApolloClient<unknown>;
@@ -437,6 +532,19 @@ export class FamilyAllowanceCaseGraphql implements FamilyAllowanceCaseApi {
             })
             .then(async (result: FetchResult<ReturnTypeMutationReadyForReview>) => {
                 return result.data?.markFamilyAllowanceCaseReadyForReview
+            })
+    }
+
+    async markFamilyAllowanceCaseBookingsComplete(id: string, comment?: string): Promise<FamilyAllowanceModel> {
+        return this.client
+            .mutate<ReturnTypeMutationBookingsComplete>({
+                mutation: MUTATION_MARK_BOOKINGS_COMPLETE,
+                variables: {id, comment},
+                refetchQueries: [{query: QUERY_LIST_CASES}, {query: QUERY_GET_CASE, variables: {id}}],
+                awaitRefetchQueries: true,
+            })
+            .then(async (result: FetchResult<ReturnTypeMutationBookingsComplete>) => {
+                return result.data?.markFamilyAllowanceCaseBookingsComplete
             })
     }
 
