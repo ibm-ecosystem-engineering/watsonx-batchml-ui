@@ -1,8 +1,8 @@
 import axios from "axios";
 import {getType} from 'mime';
 
-import {FileUploadApi} from "./file-upload.api.ts";
-import {FamilyAllowanceModel} from "../../models";
+import {FileUploadApi} from "./file-upload.api";
+import {CsvDocumentModel} from "../../models";
 
 const getMimeType = (name: string): string => {
     const re = /(?:\.([^.]+))?$/
@@ -13,19 +13,20 @@ const getMimeType = (name: string): string => {
 }
 
 export class FileUploadRest implements FileUploadApi {
-    async uploadFile(caseId: string, name: string, file: File, description?: string): Promise<FamilyAllowanceModel> {
-        const url = `/api/family-allowance/${caseId}/upload`
+    async uploadFile(name: string, file: File, predictField: string, description?: string): Promise<CsvDocumentModel> {
+        const url = `/api/csv-document`
 
         const form = new FormData();
         form.append('name', name);
         form.append('file', file);
-        form.append('type', getMimeType(name))
+        form.append('predictField', predictField);
+        form.append('type', getMimeType(name));
         if (description) {
             form.append('description', description)
         }
 
         return axios
-            .post<FamilyAllowanceModel>(url, form)
+            .post<CsvDocumentModel>(url, form)
             .then(response => {
                 return response.data;
             });

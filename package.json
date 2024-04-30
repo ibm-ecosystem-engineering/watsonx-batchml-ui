@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@apollo/client": "^3.8.6",
+    "@apollo/client": "^3.9.6",
     "@carbon/charts-react": "^1.13.6",
     "@carbon/grid": "^11.20.0",
     "@carbon/icons-react": "^11.28.0",
@@ -19,7 +19,7 @@
     "dayjs": "^1.11.10",
     "graphql-ws": "^5.14.1",
     "ibmcloud-appid-js": "^1.0.1",
-    "jotai": "^2.4.3",
+    "jotai": "^2.7.0",
     "js-cookie": "^3.0.5",
     "mime": "^3.0.0",
     "optional-js": "^2.3.0",

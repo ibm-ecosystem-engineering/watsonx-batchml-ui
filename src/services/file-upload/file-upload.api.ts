@@ -1,5 +1,5 @@
-import {FamilyAllowanceModel} from "../../models";
+import {CsvDocumentModel} from "../../models";
 
 export abstract class FileUploadApi {
-    abstract uploadFile(caseId: string, name: string, file: File, description?: string): Promise<FamilyAllowanceModel>;
+    abstract uploadFile(name: string, file: File, predictField: string, description?: string): Promise<CsvDocumentModel>;
 }
