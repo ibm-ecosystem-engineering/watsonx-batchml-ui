@@ -1,0 +1,28 @@
+
+.performance {
+  display: grid;
+  gap: 3px 1px;
+  grid-template-columns: max-content max-content max-content;
+  font-size: x-small;
+}
+
+.label, .labelCenter, .labelRight {
+  font-weight: bold;
+}
+
+.labelCenter {
+  text-align: center;
+  min-width: 20px;
+}
+
+.labelRight {
+  text-align: right;
+}
+
+.agreeAbove, .disagreeAbove, .agreeBelow, .disagreeBelow {
+  text-align: center;
+}
+
+.disagreeBelow {
+  background-color: lightpink;
+}

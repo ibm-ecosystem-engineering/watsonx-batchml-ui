@@ -7,3 +7,4 @@ export * from './UIShell'
 export * from './HydrateAtoms';
 export * from './InfoRow';
 export * from './EnabledButton';
+export * from './SimpleTable';

@@ -9,7 +9,8 @@ import './App.css'
 import {activeItemAtom} from "./atoms";
 import {NotFound, UIShell} from "./components";
 import {MenuLinksModel, NavigationModel} from "./models";
-import {CaseView} from "./views";
+import {CsvDocumentsListView} from "./views";
+import {CsvDocumentDetailView} from "./views/CsvDocumentDetailView";
 
 function App() {
     const [activeItem, setActiveItem] = useAtom(activeItemAtom);
@@ -19,7 +20,8 @@ function App() {
     }
 
     const menuLinks: MenuLinksModel[] = [
-        {title: 'Family Allowance Case', href: '/:id', element: <CaseView />, excludeFromMenu: true},
+        {title: 'Documents', href: '/', element: <CsvDocumentsListView />, excludeFromMenu: true},
+        {title: 'Document', href: ':id', element: <CsvDocumentDetailView />, excludeFromMenu: true}
     ]
 
     const navigation: NavigationModel = {
@@ -55,7 +57,7 @@ function App() {
 
     return (
         <div>
-            <UIShell prefix="Family Allowance" navigation={navigation} activeItem={activeItem} setActiveItem={setActiveItem}>
+            <UIShell prefix="Documents" navigation={navigation} activeItem={activeItem} setActiveItem={setActiveItem}>
                 <Routes>
                     {renderMenuLinks(menuLinks)}
                     <Route key="route-all" path="*" element={<NotFound />} />

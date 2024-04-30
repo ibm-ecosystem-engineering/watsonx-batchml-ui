@@ -2,121 +2,63 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Activity {
-  actor: String!
-  comment: String!
-  id: ID!
-  timestamp: String!
-  type: String!
-}
-
-type Address {
-  addressLine1: String!
-  addressLine2: String
-  canton: String!
-  city: String!
-  country: String!
-  postalCode: String!
-}
-
-type Dependent {
-  birthDate: String!
-  father: Person
-  firstName: String!
-  gender: String!
-  governmentId: String!
-  id: ID!
-  lastName: String!
-  livesWithApplicant: Boolean!
-  mother: Person
-  relationshipToApplicant: FamilyAllowanceRelationship!
-}
-
-type Employee {
-  emailAddress: String!
-  employeeId: String!
-  firstName: String!
-  gender: String!
-  governmentId: String!
-  id: ID!
-  lastName: String!
-  mailingAddress: Address!
-  maritalStatus: FamilyAllowanceMaritalStatus!
-  phoneNumber: String!
-}
-
-type FamilyAllowance {
-  applicant: Employee!
-  changeType: FamilyAllowanceType!
-  compensationOfficeId: String
-  dependents: [Dependent!]!
-  history: [Activity!]!
-  id: ID!
-  otherParents: [OtherParent!]
-  requiredInformation: [RequiredInformation!]!
-  spouse: Spouse
-  status: FamilyAllowanceStatus!
-  supportingDocuments: [FamilyAllowanceDocument!]!
-}
-
-"""Document that supports the Family Allowance Case"""
-type FamilyAllowanceDocument {
+"""CSV Document"""
+type CsvDocument {
   description: String
   id: ID!
   name: String!
-  type: String!
-  url: String!
+  originalUrl: String!
+  predictField: String!
+  status: CsvDocumentStatus!
 }
 
-enum FamilyAllowanceEmploymentStatus {
-  Employed
-  SelfEmployed
-  Unemployed
+"""Csv Document Record"""
+type CsvDocumentRecord {
+  confidence: Float
+  data: String!
+  documentId: String!
+  id: String!
+  predictionValue: String
+  providedValue: String!
 }
 
-enum FamilyAllowanceMaritalStatus {
-  Divorced
-  Married
-  NotMarried
+"""Csv document statuses"""
+enum CsvDocumentStatus {
+  Completed
+  Deleted
+  Error
+  InProgress
 }
 
-enum FamilyAllowanceRelationship {
-  Father
-  Mother
-  StepFather
-  StepMother
-}
-
-enum FamilyAllowanceStatus {
-  Approved
-  Closed
-  CompletedBookings
-  Denied
-  NeedsInfo
-  PendingApproval
-  PendingBookings
-  ReadyForReview
-  Reviewed
-}
-
-enum FamilyAllowanceStatusFilter {
+"""Csv document statuses"""
+enum CsvDocumentStatusFilter {
   All
-  Approved
-  Closed
-  CompletedBookings
-  Denied
-  NeedsInfo
-  PendingApproval
-  PendingBookings
-  ReadyForReview
-  Reviewed
+  Completed
+  Deleted
+  Error
+  InProgress
 }
 
-enum FamilyAllowanceType {
-  Adoption
-  Birth
-  ChildAllowance
-  TrainingAllowance
+"""CSV Prediction"""
+type CsvPrediction {
+  date: String!
+  documentId: String!
+  id: ID!
+  model: String!
+  performanceSummary: PerformanceSummary!
+  predictionUrl: String!
+  predictions: [CsvPredictionResult!]!
+}
+
+"""CSV Prediction Result"""
+type CsvPredictionResult {
+  confidence: Float!
+  csvRecordId: String!
+  documentId: String!
+  id: ID!
+  predictionId: String!
+  predictionValue: String!
+  providedValue: String!
 }
 
 """greeting"""
@@ -125,64 +67,34 @@ type Greeting {
 }
 
 type Mutation {
-  markFamilyAllowanceCaseBookingsComplete(comment: String, id: ID!): FamilyAllowance!
-  markFamilyAllowanceCaseReadyForReview(id: ID!): FamilyAllowance!
-  reviewFamilyAllowanceCase(id: ID!, input: ReviewInput!): FamilyAllowance!
-  updateRequiredInformation(caseId: ID!, completed: Boolean!, infoId: ID!): FamilyAllowance!
+  createCsvPrediction(id: ID!, model: String): CsvPrediction!
+  deleteCsvDocument(id: ID!): Record!
 }
 
-type OtherParent {
-  emailAddress: String!
-  employmentStatus: FamilyAllowanceEmploymentStatus!
-  firstName: String!
-  gender: String!
-  governmentId: String!
-  id: ID!
-  lastName: String!
-  mailingAddress: Address!
-  maritalStatus: FamilyAllowanceMaritalStatus!
-  phoneNumber: String!
-}
-
-type Person {
-  emailAddress: String!
-  firstName: String!
-  gender: String!
-  governmentId: String!
-  id: ID!
-  lastName: String!
-  mailingAddress: Address!
-  maritalStatus: FamilyAllowanceMaritalStatus!
-  phoneNumber: String!
+"""Performance Summary"""
+type PerformanceSummary {
+  agreeAboveThreshold: Float!
+  agreeBelowThreshold: Float!
+  confidenceThreshold: Float!
+  disagreeAboveThreshold: Float!
+  disagreeBelowThreshold: Float!
+  totalCount: Float!
 }
 
 type Query {
-  getFamilyAllowanceCase(id: ID!): FamilyAllowance!
+  getCsvDocument(id: ID!): CsvDocument!
   helloWorld: Greeting!
-  listFamilyAllowanceCases(status: FamilyAllowanceStatusFilter): [FamilyAllowance!]!
+  listCsvDocumentRecords(id: ID!): CsvDocumentRecord!
+  listCsvDocuments(status: CsvDocumentStatusFilter): [CsvDocument!]!
+  listCsvPredictions(id: ID!): [CsvPrediction!]!
 }
 
-type RequiredInformation {
-  completed: Boolean!
-  description: String!
+"""Record"""
+type Record {
   id: ID!
 }
 
-input ReviewInput {
-  comment: String
-  requiredInformation: [String!]
-}
-
-type Spouse {
-  emailAddress: String!
-  employmentStatus: FamilyAllowanceEmploymentStatus!
-  firstName: String!
-  gender: String!
-  governmentId: String!
-  id: ID!
-  lastName: String!
-  mailingAddress: Address!
-  maritalStatus: FamilyAllowanceMaritalStatus!
-  marriedToApplicant: Boolean!
-  phoneNumber: String!
+type Subscription {
+  observeCsvDocumentUpdates: CsvDocument!
+  observeCsvPredictionUpdates: CsvPrediction!
 }
