@@ -17,8 +17,12 @@ import {
 
 import './DataTable.scss';
 
+export interface SortableDataTableHeader extends DataTableHeader {
+    isSortable?: boolean;
+}
+
 export interface DataTableProps<ColType extends any[]> {
-    headerData: DataTableHeader[];
+    headerData: SortableDataTableHeader[];
     rowData: Array<Omit<DataTableRow<ColType>, 'cells'>>;
     onRowClick?: (id: string) => void;
     onToolbarButtonClick?: () => void;
@@ -43,7 +47,7 @@ export const DataTable: React.FunctionComponent<DataTableProps<any[]>> = <ColTyp
 
     const onRowClick = props.onRowClick || (() => {return});
     return (
-        <InnerDataTable rows={props.rowData} headers={props.headerData} isSortable>
+        <InnerDataTable rows={props.rowData} headers={props.headerData}>
             {({ rows, headers, getHeaderProps, getTableProps, getToolbarProps, onInputChange }) => (
                 <TableContainer>
                     <TableToolbar {...getToolbarProps()} aria-label="data table toolbar" size="lg">

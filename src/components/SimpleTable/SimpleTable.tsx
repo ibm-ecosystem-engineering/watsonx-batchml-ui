@@ -17,7 +17,7 @@ export interface SimpleTableProps {
 export const SimpleTable: React.FunctionComponent<SimpleTableProps> = (props: SimpleTableProps) => {
 
     return (<div className="simple-table">
-        {props.rows.map((row: TableRow) => <TableRowView row={row} />)}
+        {props.rows.map((row: TableRow, index: number) => <TableRowView key={index} row={row} />)}
     </div>)
 }
 

@@ -3,24 +3,36 @@ import {ApolloClient, FetchResult} from "@apollo/client";
 
 import {CsvDocumentApi} from "./csv-document.api";
 import {
+    CsvDocumentRecordBackendModel,
     MUTATE_DELETE_DOCUMENT,
     MUTATION_CREATE_PREDICTION,
     QUERY_GET_DOCUMENT,
     QUERY_LIST_DOCUMENT_RECORDS,
     QUERY_LIST_DOCUMENTS,
+    QUERY_LIST_PREDICTION_RECORDS,
     QUERY_LIST_PREDICTIONS,
     ReturnTypeCreatePrediction,
     ReturnTypeDeleteDocument,
     ReturnTypeGetDocument,
     ReturnTypeListDocumentRecords,
     ReturnTypeListDocuments,
+    ReturnTypeListPredictionRecords,
     ReturnTypeListPredictions,
-    ReturnTypeSubscriptionDocuments, ReturnTypeSubscriptionPredictions,
+    ReturnTypeSubscriptionDocuments,
+    ReturnTypeSubscriptionPredictions,
     SUBSCRIPTION_DOCUMENTS,
     SUBSCRIPTION_PREDICTIONS
 } from "./graphql.support";
 import {getApolloClient} from "../../backends";
-import {CsvDocumentModel, CsvDocumentRecordModel, CsvDocumentStatusFilter, CsvPredictionModel} from "../../models";
+import {
+    CsvDocumentModel,
+    CsvDocumentRecordModel,
+    CsvDocumentStatusFilter,
+    CsvPredictionModel,
+    CsvPredictionRecordFilter,
+    CsvPredictionResultModel,
+    Record
+} from "../../models";
 
 
 let _documentSubject: Subject<CsvDocumentModel>;
@@ -49,9 +61,8 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
                 query: QUERY_GET_DOCUMENT,
                 variables: {id}
             })
-            .then((result: FetchResult<ReturnTypeGetDocument>) => {
-                return result.data.getCsvDocument
-            })
+            .then((result: FetchResult<ReturnTypeGetDocument>) => result.data.getCsvDocument)
+            .then(result => Object.assign({}, result, {originalUrl: `/api${result.originalUrl}`}))
     }
 
     async deleteCsvDocument(id: string): Promise<{ id: string; }> {
@@ -72,6 +83,7 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
                 variables: {documentId}
             })
             .then((result: FetchResult<ReturnTypeListDocumentRecords>) => result.data.listCsvDocumentRecords)
+            .then(backendRecordsToRecordModels)
     }
 
     async listCsvPredictions(documentId: string): Promise<CsvPredictionModel[]> {
@@ -81,6 +93,7 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
                 variables: {documentId},
             })
             .then((result: FetchResult<ReturnTypeListPredictions>) => result.data.listCsvPredictions)
+            .then(result => result.map(val => Object.assign({}, val, {predictionUrl: `/api${val.predictionUrl}`})))
     }
 
     async createCsvPrediction(documentId: string, model?: string): Promise<CsvPredictionModel> {
@@ -92,6 +105,30 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
                 awaitRefetchQueries: true,
             })
             .then((result: FetchResult<ReturnTypeCreatePrediction>) => result.data.createCsvPrediction)
+    }
+
+    async listCsvPredictionRecords(predictionId: string, options?: {filter?: CsvPredictionRecordFilter}): Promise<CsvPredictionResultModel[]> {
+        return this.client
+            .query<ReturnTypeListPredictionRecords>({
+                query: QUERY_LIST_PREDICTION_RECORDS,
+                variables: options ? {predictionId} : {predictionId, options},
+            })
+            .then((result: FetchResult<ReturnTypeListPredictionRecords>) => result.data.listCsvPredictionRecords)
+            // TODO remove
+            .then((results: CsvPredictionResultModel[]) => results.map(val => Object.assign({}, val, {agree: val.providedValue === val.predictionValue})))
+            .then((results: CsvPredictionResultModel[]) => {
+                const filter = options?.filter || CsvPredictionRecordFilter.All
+
+                if (filter === CsvPredictionRecordFilter.AllDisagree || filter === CsvPredictionRecordFilter.DisagreeBelowConfidence) {
+                    results = results.filter(val => !val.agree)
+                }
+
+                if (filter === CsvPredictionRecordFilter.DisagreeBelowConfidence) {
+                    results = results.filter(val => val.confidence < 0.8)
+                }
+
+                return results
+            })
     }
 
     observeCsvDocumentUpdates(): Observable<CsvDocumentModel> {
@@ -128,4 +165,20 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
         return _predictionSubject.asObservable()
     }
 
+}
+
+const backendRecordsToRecordModels = (records: CsvDocumentRecordBackendModel[]) => {
+    return records.map(backendRecordToRecordModel)
+}
+
+const backendRecordToRecordModel = (record: CsvDocumentRecordBackendModel): CsvDocumentRecordModel => {
+    try {
+        const data: Record = JSON.parse(record.data)
+
+        return Object.assign({}, record, {data: Object.assign(data, {id: record.id, documentId: record.documentId})})
+    } catch (err) {
+        console.log('Error parsing JSON: ', err)
+    }
+
+    return Object.assign({}, record, {data: {id: record.id, documentId: record.documentId} as any})
 }
