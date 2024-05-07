@@ -1,5 +1,6 @@
 import {gql} from "@apollo/client";
-import {CsvDocumentModel, CsvDocumentRecordModel, CsvPredictionModel} from "../../models";
+
+import {CsvDocumentModel, CsvPredictionModel, CsvPredictionResultModel} from "../../models";
 
 export const QUERY_LIST_DOCUMENTS = gql`
     query ListCsvDocuments($status: CsvDocumentStatusFilter) {
@@ -48,7 +49,14 @@ export const QUERY_LIST_DOCUMENT_RECORDS = gql`
         }
     }
 `
-export type ReturnTypeListDocumentRecords = {listCsvDocumentRecords: CsvDocumentRecordModel[]}
+export interface CsvDocumentRecordBackendModel {
+    id: string;
+    documentId: string;
+    providedValue: string;
+    data: string;
+}
+
+export type ReturnTypeListDocumentRecords = {listCsvDocumentRecords: CsvDocumentRecordBackendModel[]}
 
 export const QUERY_LIST_PREDICTIONS = gql`
     query ListCsvPredictions($documentId: ID!) {
@@ -70,6 +78,22 @@ export const QUERY_LIST_PREDICTIONS = gql`
     }
 `
 export type ReturnTypeListPredictions = {listCsvPredictions: CsvPredictionModel[]}
+
+export const QUERY_LIST_PREDICTION_RECORDS = gql`
+    query ListCsvPredictionRecords($predictionId: ID!) {
+        listCsvPredictionRecords(id: $predictionId) {
+            id
+            documentId
+            predictionId
+            csvRecordId
+            providedValue
+            predictionValue
+            confidence
+            agree
+        }
+    }
+`
+export type ReturnTypeListPredictionRecords = {listCsvPredictionRecords: CsvPredictionResultModel[]}
 
 export const MUTATION_CREATE_PREDICTION = gql`
     mutation CreateCsvPrediction($documentId: ID!) {

@@ -48,8 +48,6 @@ export const CsvDocumentsListView: React.FunctionComponent<CsvDocumentsListViewP
     const headerData: Array<{header: string, key: keyof CsvDocumentRow}> = [
         {header: 'Name', key: 'name'},
         {header: 'Description', key: 'description'},
-        {header: 'Status', key: 'status'},
-        {header: 'Download', key: 'originalUrl'},
     ]
 
     const navigateToDetails = (docId: string) => {

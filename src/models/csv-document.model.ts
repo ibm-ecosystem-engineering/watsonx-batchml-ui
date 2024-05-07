@@ -1,4 +1,5 @@
 import {MachineLearningResultModel} from "./machine-learning-result.model";
+import {SelectValue} from "./select-value.model.ts";
 
 export interface CsvDocumentInputModel {
     name: string;
@@ -19,11 +20,17 @@ export const isCsvDocumentModel = (val: unknown): val is CsvDocumentModel => {
         && !!(val as CsvDocumentModel).status
 }
 
+export interface Record {
+    id: string;
+    documentId: string;
+    [key: string]: string
+}
+
 export interface CsvDocumentRecordModel {
     id: string;
     documentId: string;
     providedValue: string;
-    data: string;
+    data: Record;
 }
 
 export enum CsvDocumentStatus {
@@ -81,6 +88,7 @@ export interface CsvPredictionResultModel {
     providedValue: string;
     predictionValue: string;
     confidence: number;
+    agree: boolean;
 }
 
 // performance summary (e.g. number of agree/disagree, above/below confidence threshold
@@ -110,3 +118,36 @@ export interface CsvDocumentEventModel<T extends {id: string} = {id: string}> {
     target: T;
     action: CsvDocumentEventAction;
 }
+
+export enum CsvPredictionRecordFilter {
+    All = 'All',
+    AllDisagree = 'AllDisagree',
+    AllBelowConfidence = 'AllBelowConfidence',
+    DisagreeBelowConfidence = 'DisagreeBelowConfidence'
+}
+
+export const CsvPredictionRecordFilterValues = {
+    All: new SelectValue({value: CsvPredictionRecordFilter.All, label: 'All predictions'}),
+    AllDisagree: new SelectValue({value: CsvPredictionRecordFilter.AllDisagree, label: 'All disagree'}),
+    AllBelowConfidence: new SelectValue({value: CsvPredictionRecordFilter.AllBelowConfidence, label: 'All below confidence'}),
+    DisagreeLowConfidence: new SelectValue({value: CsvPredictionRecordFilter.DisagreeBelowConfidence, label: 'Disagree below confidence'}),
+
+    values: () => {
+        return [CsvPredictionRecordFilterValues.All, CsvPredictionRecordFilterValues.AllDisagree, CsvPredictionRecordFilterValues.AllBelowConfidence, CsvPredictionRecordFilterValues.DisagreeLowConfidence]
+    },
+    lookup: (value: string): CsvPredictionRecordFilter | undefined => {
+        switch (value) {
+            case CsvPredictionRecordFilter.All:
+                return CsvPredictionRecordFilter.All;
+            case CsvPredictionRecordFilter.AllDisagree:
+                return CsvPredictionRecordFilter.AllDisagree;
+            case CsvPredictionRecordFilter.AllBelowConfidence:
+                return CsvPredictionRecordFilter.AllBelowConfidence;
+            case CsvPredictionRecordFilter.DisagreeBelowConfidence:
+                return CsvPredictionRecordFilter.DisagreeBelowConfidence;
+            default:
+                return;
+        }
+    }
+}
+

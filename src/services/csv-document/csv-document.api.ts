@@ -1,4 +1,9 @@
-import {CsvDocumentModel, CsvDocumentRecordModel, CsvDocumentStatusFilter, CsvPredictionModel} from "../../models";
+import {
+    CsvDocumentModel,
+    CsvDocumentRecordModel,
+    CsvDocumentStatusFilter,
+    CsvPredictionModel, CsvPredictionRecordFilter, CsvPredictionResultModel,
+} from "../../models";
 import {Observable} from "rxjs";
 
 export abstract class CsvDocumentApi {
@@ -10,6 +15,7 @@ export abstract class CsvDocumentApi {
 
     abstract listCsvPredictions(documentId: string): Promise<CsvPredictionModel[]>
     abstract createCsvPrediction(documentId: string, model?: string): Promise<CsvPredictionModel>
+    abstract listCsvPredictionRecords(predictionId: string, options?: {filter?: CsvPredictionRecordFilter}): Promise<CsvPredictionResultModel[]>
 
     abstract observeCsvDocumentUpdates(): Observable<CsvDocumentModel>
     abstract observeCsvPredictionUpdates(): Observable<CsvPredictionModel>
