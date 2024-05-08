@@ -8,7 +8,6 @@ export const QUERY_LIST_DOCUMENTS = gql`
             id
             name
             description
-            predictField
             status
             originalUrl
         }
@@ -22,7 +21,6 @@ export const QUERY_GET_DOCUMENT = gql`
             id
             name
             description
-            predictField
             status
             originalUrl
         }

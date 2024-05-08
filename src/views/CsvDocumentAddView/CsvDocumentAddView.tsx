@@ -1,16 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import React, {useState} from 'react';
-import {
-    Button,
-    ComposedModal,
-    FileUploader,
-    ModalBody,
-    ModalFooter,
-    ModalHeader,
-    TextArea,
-    TextInput
-} from "@carbon/react";
+import {Button, ComposedModal, FileUploader, ModalBody, ModalFooter, ModalHeader, TextArea} from "@carbon/react";
 
 import './CsvDocumentAddView.scss'
 import {CsvDocumentModel} from "../../models";
@@ -29,26 +20,23 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
         return (<></>)
     }
 
-    let predictField;
     let descriptionField;
 
     const handleSubmit = () => {
         const fileUploadService: FileUploadApi = fileUploadApi();
 
-        const name: string = predictField.value
         const description: string = descriptionField.value
 
         console.log('Handle submit: ', {name, description, fileList})
 
         const files: File[] = fileListUtil(fileList);
-        console.log('File uploader: ', {files: fileList, fileNames: files.map(f => f.name), name, description});
+        console.log('File uploader: ', {files: fileList, fileNames: files.map(f => f.name), description});
 
-        predictField.disabled = true
         descriptionField.disabled = true
         setFileStatus('uploading')
 
         // TODO handle document remove
-        Promise.all(files.map(f => fileUploadService.uploadFile(f.name, f, name, description)))
+        Promise.all(files.map(f => fileUploadService.uploadFile(f.name, f, description)))
             .then((result: CsvDocumentModel[]) => {
                 console.log('Upload document complete')
                 setFileStatus('complete');
@@ -80,7 +68,6 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
                 name=""
                 onChange={(event: {target: {files: FileList}}) => setFileList(event.target.files)}
             />
-            <TextInput id="add-document-predict-field" labelText="Predict field:" placeholder="e.g. WHT_PCT" ref={(input) => predictField = input} />
             <TextArea id="add-document-description" labelText="Description:" ref={(input) => descriptionField = input}/>
         </ModalBody>
         <ModalFooter>
