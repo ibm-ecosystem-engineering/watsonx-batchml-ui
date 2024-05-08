@@ -13,13 +13,12 @@ const getMimeType = (name: string): string => {
 }
 
 export class FileUploadRest implements FileUploadApi {
-    async uploadFile(name: string, file: File, predictField: string, description?: string): Promise<CsvDocumentModel> {
+    async uploadFile(name: string, file: File, description?: string): Promise<CsvDocumentModel> {
         const url = `/api/csv-document`
 
         const form = new FormData();
         form.append('name', name);
         form.append('file', file);
-        form.append('predictField', predictField);
         form.append('type', getMimeType(name));
         if (description) {
             form.append('description', description)
