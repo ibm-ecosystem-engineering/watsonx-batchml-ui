@@ -20,7 +20,7 @@ function App() {
     }
 
     const menuLinks: MenuLinksModel[] = [
-        {title: 'Documents', href: '/', element: <CsvDocumentsListView />, excludeFromMenu: true},
+        {title: 'Tax Withholding', href: '/', element: <CsvDocumentsListView />, excludeFromMenu: true},
         {title: 'Document', href: ':id', element: <CsvDocumentDetailView />, excludeFromMenu: true}
     ]
 

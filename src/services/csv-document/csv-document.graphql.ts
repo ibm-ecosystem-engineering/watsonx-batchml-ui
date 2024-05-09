@@ -108,14 +108,17 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
     }
 
     async listCsvPredictionRecords(predictionId: string, options?: {filter?: CsvPredictionRecordFilter}): Promise<CsvPredictionResultModel[]> {
+        const variables = options ? {predictionId, options} : {predictionId}
+
+        console.log('Querying csv prediction records: ', variables)
+
         return this.client
             .query<ReturnTypeListPredictionRecords>({
                 query: QUERY_LIST_PREDICTION_RECORDS,
-                variables: options ? {predictionId} : {predictionId, options},
+                variables,
             })
             .then((result: FetchResult<ReturnTypeListPredictionRecords>) => result.data.listCsvPredictionRecords)
             // TODO remove
-            .then((results: CsvPredictionResultModel[]) => results.map(val => Object.assign({}, val, {agree: val.providedValue === val.predictionValue})))
             .then((results: CsvPredictionResultModel[]) => {
                 const filter = options?.filter || CsvPredictionRecordFilter.All
 
