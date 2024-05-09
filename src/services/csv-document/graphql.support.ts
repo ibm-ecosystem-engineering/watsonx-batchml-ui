@@ -78,8 +78,8 @@ export const QUERY_LIST_PREDICTIONS = gql`
 export type ReturnTypeListPredictions = {listCsvPredictions: CsvPredictionModel[]}
 
 export const QUERY_LIST_PREDICTION_RECORDS = gql`
-    query ListCsvPredictionRecords($predictionId: ID!) {
-        listCsvPredictionRecords(id: $predictionId) {
+    query ListCsvPredictionRecords($predictionId: ID!, $options: CsvPredictionRecordOptions) {
+        listCsvPredictionRecords(id: $predictionId, options: $options) {
             id
             documentId
             predictionId

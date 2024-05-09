@@ -245,10 +245,21 @@ const predictionResultToRowData = (documents: CsvDocumentRecordModel[]) => {
             {},
             doc.get().data,
             {
-                predictionValue: row.predictionValue,
-                confidence: row.confidence,
+                providedValue: row.providedValue,
+                predictionValue: valueToPercentage(row.predictionValue),
+                confidence: valueToPercentage(row.confidence),
                 agree: row.agree ? 'true' : 'false'
             }
         )
     }
+}
+
+const valueToPercentage = (value: unknown): string => {
+    const num = Number(value)
+
+    if (isNaN(num)) {
+        return '' + value
+    }
+
+    return num.toLocaleString(undefined,{style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 2})
 }
