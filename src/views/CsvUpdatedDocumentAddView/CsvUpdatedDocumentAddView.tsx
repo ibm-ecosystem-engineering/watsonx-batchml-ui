@@ -3,16 +3,18 @@
 import React, {useState} from 'react';
 import {Button, ComposedModal, FileUploader, ModalBody, ModalFooter, ModalHeader, TextArea} from "@carbon/react";
 
-import './CsvDocumentAddView.scss'
+import './CsvUpdatedDocumentAddView.scss'
 import {CsvDocumentModel} from "../../models";
 import {FileUploadApi, fileUploadApi} from "../../services";
 
 export interface CsvDocumentAddViewProps {
     show: boolean;
+    documentId: string;
+    predictionId: string;
     onNewDocument: (val?: CsvDocumentModel[]) => void;
 }
 
-export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps> = ({onNewDocument, show}: CsvDocumentAddViewProps) => {
+export const CsvUpdatedDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps> = ({onNewDocument, show, documentId, predictionId}: CsvDocumentAddViewProps) => {
     const [fileStatus, setFileStatus] = useState<'edit' | 'complete' | 'uploading'>('edit')
     const [fileList, setFileList] = useState<FileList | undefined>(undefined)
 
@@ -36,7 +38,7 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
         setFileStatus('uploading')
 
         // TODO handle document remove
-        Promise.all(files.map(f => fileUploadService.uploadFile(f.name, f, description)))
+        Promise.all(files.map(f => fileUploadService.uploadCorrectedPredictionsFile(f.name, f, documentId, predictionId, description)))
             .then((result: CsvDocumentModel[]) => {
                 console.log('Upload document complete')
                 setFileStatus('complete');
@@ -50,12 +52,12 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
             })
     }
 
-    return (<ComposedModal open={true} onClose={() => onNewDocument()} className="csv-document-add-modal">
-        <ModalHeader label="Documents">Add a CSV document</ModalHeader>
+    return (<ComposedModal open={true} onClose={() => onNewDocument()} className="csv-updated-document-add-modal">
+        <ModalHeader label="Documents">Add an updated CSV document</ModalHeader>
         <ModalBody>
-            <p>Upload the CSV document for AI prediction.</p>
+            <p>Upload the updated CSV document for AI prediction.</p>
             <FileUploader
-                labelTitle="Add CSV document"
+                labelTitle="Add updated CSV document"
                 labelDescription="Max file size is 500mb."
                 buttonLabel="Select file"
                 buttonKind="primary"
@@ -68,7 +70,7 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
                 name=""
                 onChange={(event: {target: {files: FileList}}) => setFileList(event.target.files)}
             />
-            <TextArea id="add-document-description" labelText="Description:" ref={(input) => descriptionField = input}/>
+            <TextArea id="add-updated-document-description" labelText="Description:" ref={(input) => descriptionField = input}/>
         </ModalBody>
         <ModalFooter>
             <Button kind="tertiary" onClick={() => onNewDocument()}>Cancel</Button>

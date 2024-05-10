@@ -89,6 +89,7 @@ type PerformanceSummary {
   agreeAboveThreshold: Float!
   agreeBelowThreshold: Float!
   confidenceThreshold: Float!
+  correctedRecords: Float!
   disagreeAboveThreshold: Float!
   disagreeBelowThreshold: Float!
   totalCount: Float!
