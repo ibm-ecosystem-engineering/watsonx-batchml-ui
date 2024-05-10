@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import React, {ChangeEvent} from 'react';
+import React, {ChangeEvent, useState} from 'react';
 import Optional from "optional-js";
 import {useAtomValue, useSetAtom} from "jotai";
 import {useParams} from "react-router-dom";
@@ -21,9 +21,10 @@ import {
     CsvDocumentRecordModel,
     CsvPredictionModel, CsvPredictionRecordFilter, CsvPredictionRecordFilterValues,
     CsvPredictionResultModel,
-    PerformanceSummaryModel
 } from "../../models";
 import {first} from "../../utils";
+import {CsvUpdatedDocumentAddView} from "../CsvUpdatedDocumentAddView";
+import {PerformanceSummaryView} from "../PerformanceSummaryView";
 
 export interface CsvDocumentDetailViewProps {
 }
@@ -68,17 +69,20 @@ const CsvDocumentDetailViewInternal: React.FunctionComponent<CsvDocumentDetailVi
         <div style={{width: '600px', margin: '0 auto', paddingBottom: '20px'}}>
             <SimpleTable rows={documentSummary} />
         </div>
-        <PredictionSummaryView />
+        <PredictionSummaryView document={document} />
     </div>)
 }
 
 interface PredictionSummaryViewProps {
+    document: CsvDocumentModel;
 }
 
-const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps> = () => {
+const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps> = ({document}: PredictionSummaryViewProps) => {
 
     const loadablePredictions = useAtomValue(selectedCsvPredictionsLoadable)
     const loadableResults = useAtomValue(selectedCsvRecordsLoadable)
+    const [showAddModal, setShowAddModal] = useState(false)
+    const [predictionId, setPredictionId] = useState('')
     const setSelectedPrediction = useSetAtom(selectedPredictionAtom)
 
     if (loadableResults.state === 'loading') {
@@ -93,8 +97,14 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
         return (<LoadableError text="Error loading predictions" />)
     }
 
+    const showUpdate = (data: CsvPredictionModel) => {
+        setPredictionId(data.id)
+        setShowAddModal(true)
+    }
+
     const predictions: CsvPredictionModel[] = loadablePredictions.data
-    const rowData = predictions.map(csvPredictionToRow)
+
+    const rowData = predictions.map(csvPredictionToRow(showUpdate))
 
     const headerData: DataTableHeader[] = [{
         key: 'date',
@@ -110,10 +120,13 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
         header: 'Record count'
     }, {
         key: 'confidenceThreshold',
-        header: 'Confidence threshold'
+        header: 'Threshold'
     }, {
         key: 'performanceSummary',
         header: 'Performance'
+    }, {
+        key: 'upload',
+        header: 'Upload updates'
     }]
 
     const setSelectedPredictionId = (id: string) => {
@@ -127,28 +140,40 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
         )
     }
 
+    const handleOnNewDocument = () => {
+        setShowAddModal(false)
+    }
+
     return (<div>
+        <CsvUpdatedDocumentAddView
+            show={showAddModal}
+            documentId={document.id}
+            predictionId={predictionId}
+            onNewDocument={handleOnNewDocument} />
         <DataTable
             headerData={headerData}
             rowData={rowData}
             onRowClick={setSelectedPredictionId}
         />
-        <PredictionDetailView documents={loadableResults.data} />
+        <PredictionDetailView documents={loadableResults.data} show={!showAddModal} />
     </div>)
 }
 
-const csvPredictionToRow = (data: CsvPredictionModel) => {
-    return Object.assign(
-        {},
-        data,
-        {
-            date: parseISOString(data.date).toDateString(),
-            predictionUrl: (<a href={data.predictionUrl}>download</a>),
-            totalCount: data.performanceSummary.totalCount,
-            confidenceThreshold: (data.performanceSummary.confidenceThreshold * 100) + '%',
-            performanceSummary: (<PerformanceSummaryView data={data.performanceSummary} />)
-        }
-    )
+const csvPredictionToRow = (uploadHandler: (data: CsvPredictionModel) => void) => {
+    return (data: CsvPredictionModel) => {
+        return Object.assign(
+            {},
+            data,
+            {
+                date: parseISOString(data.date).toDateString(),
+                predictionUrl: (<a href={data.predictionUrl}>download</a>),
+                totalCount: data.performanceSummary.totalCount,
+                confidenceThreshold: (data.performanceSummary.confidenceThreshold * 100) + '%',
+                performanceSummary: (<PerformanceSummaryView data={data.performanceSummary} />),
+                upload: (<a onClick={() => uploadHandler(data)}>upload updates</a>)
+            }
+        )
+    }
 }
 
 const parseISOString = (s: string) => {
@@ -157,40 +182,21 @@ const parseISOString = (s: string) => {
     return new Date(Date.UTC(Number(b[0]), Number(b[1]) - 1, Number(b[2]), Number(b[3]), Number(b[4]), Number(b[5]), Number(b[6])));
 }
 
-interface PerformanceSummaryViewProps {
-    data: PerformanceSummaryModel
-}
-
-const PerformanceSummaryView: React.FunctionComponent<PerformanceSummaryViewProps> = ({data}: PerformanceSummaryViewProps) => {
-
-    const formatPercent = (num: number, den: number): string => {
-        const value = num / den
-
-        return '(' + (value * 100).toFixed(2) + '%)'
-    }
-
-    const agreeAboveThresholdPercent = formatPercent(data.agreeAboveThreshold, data.totalCount)
-    const agreeBelowThresholdPercent = formatPercent(data.agreeBelowThreshold, data.totalCount)
-    const disagreeAboveThresholdPercent = formatPercent(data.disagreeAboveThreshold, data.totalCount)
-    const disagreeBelowThresholdPercent = formatPercent(data.disagreeBelowThreshold, data.totalCount)
-
-    return (<div style={{display: 'grid', fontSize: 'small'}}>
-        <div style={{gridColumn: 1}}>&nbsp;</div><div style={{fontWeight: 'bold', gridColumn: 2, textAlign: 'center'}}>Agree</div><div style={{fontWeight: 'bold', textAlign: 'center'}}>Disagree</div>
-        <div style={{gridColumn: 1, fontWeight: 'bold'}}>Above</div><div style={{gridColumn: 2, textAlign: 'center'}}>{data.agreeAboveThreshold} {agreeAboveThresholdPercent}</div><div style={{gridColumn: 3, textAlign: 'center'}}>{data.disagreeAboveThreshold} {disagreeAboveThresholdPercent}</div>
-        <div style={{gridColumn: 1, fontWeight: 'bold'}}>Below</div><div style={{gridColumn: 2, textAlign: 'center'}}>{data.agreeBelowThreshold} {agreeBelowThresholdPercent}</div><div style={{gridColumn: 3, textAlign: 'center'}}>{data.disagreeBelowThreshold} {disagreeBelowThresholdPercent}</div>
-    </div>)
-}
-
 interface PredictionDetailViewProps {
     documents: CsvDocumentRecordModel[];
+    show: boolean;
 }
 
-const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> = ({documents}: PredictionDetailViewProps = {documents: []}) => {
+const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> = ({documents, show}: PredictionDetailViewProps = {documents: [], show: true}) => {
 
     const loadable = useAtomValue(selectedPredictionRecordsLoadable)
     const prediction = useAtomValue(selectedPredictionAtom)
     const filter = useAtomValue(predictionRecordFilterAtom)
     const setFilter = useSetAtom(predictionRecordFilterAtom)
+
+    if (!show) {
+        return (<></>)
+    }
 
     if (loadable.state === 'loading') {
         return (<LoadableLoading />)

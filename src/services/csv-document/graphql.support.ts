@@ -71,6 +71,7 @@ export const QUERY_LIST_PREDICTIONS = gql`
                 agreeBelowThreshold
                 disagreeAboveThreshold
                 disagreeBelowThreshold
+                correctedRecords
             }
         }
     }
@@ -108,6 +109,7 @@ export const MUTATION_CREATE_PREDICTION = gql`
                 agreeBelowThreshold
                 disagreeAboveThreshold
                 disagreeBelowThreshold
+                correctedRecords
             }
         }
     }
@@ -120,7 +122,6 @@ export const SUBSCRIPTION_DOCUMENTS = gql`
             id
             name
             description
-            predictField
             status
             originalUrl
         }

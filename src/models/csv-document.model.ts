@@ -99,6 +99,7 @@ export interface PerformanceSummaryModel {
     agreeBelowThreshold: number;
     disagreeAboveThreshold: number;
     disagreeBelowThreshold: number;
+    correctedRecords: number;
 }
 
 export interface CsvDocumentRowModel {
