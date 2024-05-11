@@ -206,14 +206,14 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         return (<></>)
     }
 
-    const headerData: DataTableHeader[] = Object.keys(documents[0].data)
+    const headerData: DataTableHeader[] = [
+        {header: 'Prediction', key: 'predictionValue'},
+        {header: 'Confidence', key: 'confidence'},
+        {header: 'Agree', key: 'agree'}
+    ]
+        .concat(Object.keys(documents[0].data)
         .filter(val => val !== 'id' && val !== 'documentId' && val !== 'providedValue')
-        .map(key => ({key, header: key}))
-        .concat([
-            {header: 'Prediction', key: 'predictionValue'},
-            {header: 'Confidence', key: 'confidence'},
-            {header: 'Agree', key: 'agree'}
-        ])
+        .map(key => ({key, header: key})))
 
     const rowData = loadable.data.map(predictionResultToRowData(documents))
 
