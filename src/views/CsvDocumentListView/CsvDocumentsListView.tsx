@@ -81,7 +81,7 @@ export const CsvDocumentsListView: React.FunctionComponent<CsvDocumentsListViewP
                 headerData={headerData}
                 rowData={rowData.map(csvDocumentToRow)}
                 onRowClick={navigateToDetails}
-                toolbarButtonText="Add CSV document"
+                toolbarButtonText="Add document"
                 onToolbarButtonClick={() => setShowAddModal(true)}
             />
         </div>

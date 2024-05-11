@@ -6,6 +6,7 @@ import {Button, ComposedModal, FileUploader, ModalBody, ModalFooter, ModalHeader
 import './CsvDocumentAddView.scss'
 import {CsvDocumentModel} from "../../models";
 import {FileUploadApi, fileUploadApi} from "../../services";
+import {joinList} from "../../utils";
 
 export interface CsvDocumentAddViewProps {
     show: boolean;
@@ -50,18 +51,20 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
             })
     }
 
+    const acceptList = ['.csv', '.xlsx', '.xlsb']
+
     return (<ComposedModal open={true} onClose={() => onNewDocument()} className="csv-document-add-modal">
-        <ModalHeader label="Documents">Add a CSV document</ModalHeader>
+        <ModalHeader label="Documents">Add document</ModalHeader>
         <ModalBody>
-            <p>Upload the CSV document for AI prediction.</p>
+            <p style={{paddingBottom: '10px'}}>Upload the document for AI prediction. Allowed file types are {joinList(acceptList, 'or')}.</p>
             <FileUploader
-                labelTitle="Add CSV document"
+                labelTitle=""
                 labelDescription="Max file size is 500mb."
                 buttonLabel="Select file"
                 buttonKind="primary"
                 size="md"
                 filenameStatus={fileStatus}
-                accept={['.csv']}
+                accept={acceptList}
                 multiple={false}
                 disabled={false}
                 iconDescription="Delete file"
