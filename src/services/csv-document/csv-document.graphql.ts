@@ -3,7 +3,7 @@ import {ApolloClient, FetchResult} from "@apollo/client";
 
 import {CsvDocumentApi} from "./csv-document.api";
 import {
-    CsvDocumentRecordBackendModel,
+    CsvDocumentRecordBackendModel, CsvPredictionBackendResultModel,
     MUTATE_DELETE_DOCUMENT,
     MUTATION_CREATE_PREDICTION,
     QUERY_GET_DOCUMENT,
@@ -118,6 +118,7 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
                 variables,
             })
             .then((result: FetchResult<ReturnTypeListPredictionRecords>) => result.data.listCsvPredictionRecords)
+            .then(backendPredictionRecordsToRecordModels)
     }
 
     observeCsvDocumentUpdates(): Observable<CsvDocumentModel> {
@@ -164,6 +165,26 @@ const backendRecordsToRecordModels = (records: PaginationResultModel<CsvDocument
 }
 
 const backendRecordToRecordModel = (record: CsvDocumentRecordBackendModel): CsvDocumentRecordModel => {
+    try {
+        const data: Record = JSON.parse(record.data)
+
+        return Object.assign({}, record, {data: Object.assign(data, {id: record.id, documentId: record.documentId})})
+    } catch (err) {
+        console.log('Error parsing JSON: ', err)
+    }
+
+    return Object.assign({}, record, {data: {id: record.id, documentId: record.documentId} as any})
+}
+
+
+const backendPredictionRecordsToRecordModels = (records: PaginationResultModel<CsvPredictionBackendResultModel>) => {
+    return {
+        metadata: records.metadata,
+        data: records.data.map(backendPredictionRecordToRecordModel)
+    }
+}
+
+const backendPredictionRecordToRecordModel = (record: CsvPredictionBackendResultModel): CsvPredictionResultModel => {
     try {
         const data: Record = JSON.parse(record.data)
 

@@ -89,6 +89,7 @@ export interface CsvPredictionResultModel {
     predictionValue: string;
     confidence: number;
     agree: boolean;
+    data: Record;
 }
 
 // performance summary (e.g. number of agree/disagree, above/below confidence threshold

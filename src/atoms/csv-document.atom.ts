@@ -47,7 +47,7 @@ export const selectedDocumentLoadable = loadable(selectedDocumentAtom)
 export const recordsPageAtom = atom(1)
 export const recordsPageSizeAtom = atom(defaultPageSize)
 
-export const selectedCsvRecordsAtom: Atom<Promise<PaginationResultModel<CsvDocumentRecordModel>>> = atom(
+export const selectedCsvRecordsAtom1: Atom<Promise<PaginationResultModel<CsvDocumentRecordModel>>> = atom(
     get => {
         const id: string | undefined = get(selectedDocumentIdAtom)
         const page = get(recordsPageAtom)
@@ -63,7 +63,7 @@ export const selectedCsvRecordsAtom: Atom<Promise<PaginationResultModel<CsvDocum
         return service.listCsvDocumentRecords(id, {page, pageSize})
     }
 )
-export const selectedCsvRecordsLoadable = loadable(selectedCsvRecordsAtom)
+export const selectedCsvRecordsLoadable1 = loadable(selectedCsvRecordsAtom1)
 
 export const selectedCsvPredictionsAtom: Atom<Promise<CsvPredictionModel[]>> = atom(
     get => {
