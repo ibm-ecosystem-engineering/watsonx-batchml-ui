@@ -30,7 +30,7 @@ import {
     CsvDocumentStatusFilter,
     CsvPredictionModel,
     CsvPredictionRecordFilter,
-    CsvPredictionResultModel,
+    CsvPredictionResultModel, PaginationInputModel, PaginationResultModel,
     Record
 } from "../../models";
 
@@ -45,11 +45,11 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
         this.client = getApolloClient();
     }
 
-    async listCsvDocuments({status, refreshCache}: {status?: CsvDocumentStatusFilter, refreshCache?: boolean} = {}): Promise<CsvDocumentModel[]> {
+    async listCsvDocuments(pagination: PaginationInputModel, {status, refreshCache}: {status?: CsvDocumentStatusFilter, refreshCache?: boolean} = {}): Promise<PaginationResultModel<CsvDocumentModel>> {
         return this.client
             .query<ReturnTypeListDocuments>({
                 query: QUERY_LIST_DOCUMENTS,
-                variables: {status},
+                variables: {status, pagination},
                 fetchPolicy: refreshCache ? 'network-only' : 'cache-first',
             })
             .then((result: FetchResult<ReturnTypeListDocuments>) => result.data.listCsvDocuments)
@@ -76,11 +76,11 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
             .then((result: FetchResult<ReturnTypeDeleteDocument>) => result.data.deleteCsvDocument)
     }
 
-    async listCsvDocumentRecords(documentId: string): Promise<CsvDocumentRecordModel[]> {
+    async listCsvDocumentRecords(documentId: string, pagination: PaginationInputModel): Promise<PaginationResultModel<CsvDocumentRecordModel>> {
         return this.client
             .query<ReturnTypeListDocumentRecords>({
                 query: QUERY_LIST_DOCUMENT_RECORDS,
-                variables: {documentId}
+                variables: {documentId, pagination}
             })
             .then((result: FetchResult<ReturnTypeListDocumentRecords>) => result.data.listCsvDocumentRecords)
             .then(backendRecordsToRecordModels)
@@ -107,8 +107,8 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
             .then((result: FetchResult<ReturnTypeCreatePrediction>) => result.data.createCsvPrediction)
     }
 
-    async listCsvPredictionRecords(predictionId: string, options?: {filter?: CsvPredictionRecordFilter}): Promise<CsvPredictionResultModel[]> {
-        const variables = options ? {predictionId, options} : {predictionId}
+    async listCsvPredictionRecords(predictionId: string, pagination: PaginationInputModel, options?: {filter?: CsvPredictionRecordFilter}): Promise<PaginationResultModel<CsvPredictionResultModel>> {
+        const variables = options ? {predictionId, pagination, options} : {predictionId, pagination}
 
         console.log('Querying csv prediction records: ', variables)
 
@@ -118,20 +118,6 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
                 variables,
             })
             .then((result: FetchResult<ReturnTypeListPredictionRecords>) => result.data.listCsvPredictionRecords)
-            // TODO remove
-            .then((results: CsvPredictionResultModel[]) => {
-                const filter = options?.filter || CsvPredictionRecordFilter.All
-
-                if (filter === CsvPredictionRecordFilter.AllDisagree || filter === CsvPredictionRecordFilter.DisagreeBelowConfidence) {
-                    results = results.filter(val => !val.agree)
-                }
-
-                if (filter === CsvPredictionRecordFilter.DisagreeBelowConfidence) {
-                    results = results.filter(val => val.confidence < 0.8)
-                }
-
-                return results
-            })
     }
 
     observeCsvDocumentUpdates(): Observable<CsvDocumentModel> {
@@ -170,8 +156,11 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
 
 }
 
-const backendRecordsToRecordModels = (records: CsvDocumentRecordBackendModel[]) => {
-    return records.map(backendRecordToRecordModel)
+const backendRecordsToRecordModels = (records: PaginationResultModel<CsvDocumentRecordBackendModel>) => {
+    return {
+        metadata: records.metadata,
+        data: records.data.map(backendRecordToRecordModel)
+    }
 }
 
 const backendRecordToRecordModel = (record: CsvDocumentRecordBackendModel): CsvDocumentRecordModel => {

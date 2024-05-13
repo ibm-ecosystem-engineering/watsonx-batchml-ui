@@ -7,7 +7,7 @@ import {
     CsvDocumentStatusFilter,
     CsvPredictionModel,
     CsvPredictionRecordFilter,
-    CsvPredictionResultModel
+    CsvPredictionResultModel, defaultPageSize, PaginationResultModel
 } from "../models";
 import {csvDocumentApi, CsvDocumentApi} from '../services'
 
@@ -15,8 +15,16 @@ const service: CsvDocumentApi = csvDocumentApi()
 
 export const csvDocumentStatusAtom = atom<CsvDocumentStatusFilter | undefined>(undefined)
 
+export const documentsPageAtom = atom(1)
+export const documentsPageSizeAtom = atom(defaultPageSize)
+
 export const csvDocumentsAtom = atomWithRefresh(
-    (get) => service.listCsvDocuments({status: get(csvDocumentStatusAtom), refreshCache: true})
+    (get) => {
+        const page = get(documentsPageAtom)
+        const pageSize = get(documentsPageSizeAtom)
+
+        return service.listCsvDocuments({page, pageSize}, {status: get(csvDocumentStatusAtom), refreshCache: true})
+    }
 )
 
 export const csvDocumentsLoadable = loadable(csvDocumentsAtom)
@@ -36,15 +44,23 @@ export const selectedDocumentAtom: Atom<Promise<CsvDocumentModel | undefined>> =
 )
 export const selectedDocumentLoadable = loadable(selectedDocumentAtom)
 
-export const selectedCsvRecordsAtom: Atom<Promise<CsvDocumentRecordModel[]>> = atom(
+export const recordsPageAtom = atom(1)
+export const recordsPageSizeAtom = atom(defaultPageSize)
+
+export const selectedCsvRecordsAtom: Atom<Promise<PaginationResultModel<CsvDocumentRecordModel>>> = atom(
     get => {
         const id: string | undefined = get(selectedDocumentIdAtom)
+        const page = get(recordsPageAtom)
+        const pageSize = get(recordsPageSizeAtom)
 
         if (!id) {
-            return Promise.resolve([])
+            return Promise.resolve({
+                metadata: {totalCount: 0, page, pageSize},
+                data: []
+            })
         }
 
-        return service.listCsvDocumentRecords(id)
+        return service.listCsvDocumentRecords(id, {page, pageSize})
     }
 )
 export const selectedCsvRecordsLoadable = loadable(selectedCsvRecordsAtom)
@@ -64,18 +80,23 @@ export const selectedCsvPredictionsLoadable = loadable(selectedCsvPredictionsAto
 
 export const selectedPredictionAtom = atom(undefined as CsvPredictionModel)
 
-export const selectedPredictionRecordsAtom: Atom<Promise<CsvPredictionResultModel[]>> = atom(
+export const selectedPredictionRecordsAtom: Atom<Promise<PaginationResultModel<CsvPredictionResultModel>>> = atom(
     get => {
         const prediction: CsvPredictionModel | undefined = get(selectedPredictionAtom)
         const filter = get(predictionRecordFilterAtom)
+        const page = get(recordsPageAtom)
+        const pageSize = get(recordsPageSizeAtom)
 
         if (!prediction) {
-            return Promise.resolve([])
+            return Promise.resolve({
+                metadata: {totalCount: 0, page: 1, pageSize: 20},
+                data: []
+            })
         }
 
         console.log('Looking with filter: ', {filter})
 
-        return service.listCsvPredictionRecords(prediction.id, {filter})
+        return service.listCsvPredictionRecords(prediction.id, {page, pageSize}, {filter})
     }
 )
 

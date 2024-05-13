@@ -7,9 +7,9 @@ import {Loading} from "@carbon/react";
 import {useAtomValue, useSetAtom} from "jotai";
 
 import './CsvDocumentsListView.scss'
-import {csvDocumentsAtom, csvDocumentsLoadable} from "../../atoms";
+import {csvDocumentsAtom, csvDocumentsLoadable, documentsPageAtom, documentsPageSizeAtom} from "../../atoms";
 import {DataTable} from "../../components";
-import {CsvDocumentModel} from "../../models";
+import {CsvDocumentModel, PaginationResultModel} from "../../models";
 import {CsvDocumentAddView} from "../CsvDocumentAddView";
 
 export interface CsvDocumentsListViewProps {
@@ -44,6 +44,8 @@ export const CsvDocumentsListView: React.FunctionComponent<CsvDocumentsListViewP
     const refreshDocuments = useSetAtom(csvDocumentsAtom);
     const [showAddModal, setShowAddModal] = useState(false)
     const navigate = useNavigate();
+    const page = useAtomValue(documentsPageAtom)
+    const pageSize = useAtomValue(documentsPageSizeAtom)
 
     const headerData: Array<{header: string, key: keyof CsvDocumentRow}> = [
         {header: 'Name', key: 'name'},
@@ -65,7 +67,9 @@ export const CsvDocumentsListView: React.FunctionComponent<CsvDocumentsListViewP
         return (<CsvDocumentsError />)
     }
 
-    const rowData: CsvDocumentModel[] = loadableDocuments.data
+    const data: PaginationResultModel<CsvDocumentModel> = loadableDocuments.data
+
+    const rowData = data.data
 
     const handleOnNewDocument = (docs?: CsvDocumentModel[]) => {
         setShowAddModal(false)
@@ -84,6 +88,9 @@ export const CsvDocumentsListView: React.FunctionComponent<CsvDocumentsListViewP
                 onRowClick={navigateToDetails}
                 toolbarButtonText="Add document"
                 onToolbarButtonClick={() => setShowAddModal(true)}
+                totalCount={data.metadata.totalCount}
+                page={page}
+                pageSize={pageSize}
             />
         </div>
     )

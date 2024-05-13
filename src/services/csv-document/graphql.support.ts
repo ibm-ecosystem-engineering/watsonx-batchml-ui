@@ -1,19 +1,26 @@
 import {gql} from "@apollo/client";
 
-import {CsvDocumentModel, CsvPredictionModel, CsvPredictionResultModel} from "../../models";
+import {CsvDocumentModel, CsvPredictionModel, CsvPredictionResultModel, PaginationResultModel} from "../../models";
 
 export const QUERY_LIST_DOCUMENTS = gql`
-    query ListCsvDocuments($status: CsvDocumentStatusFilter) {
-        listCsvDocuments(status: $status) {
-            id
-            name
-            description
-            status
-            originalUrl
+    query ListCsvDocuments($pagination: PaginationInput, $status: CsvDocumentStatusFilter) {
+        listCsvDocuments(status: $status, pagination: $pagination) {
+            metadata {
+                totalCount
+                page
+                pageSize
+            }
+            data {
+                id
+                name
+                description
+                status
+                originalUrl
+            }
         }
     }
 `
-export type ReturnTypeListDocuments = {listCsvDocuments: CsvDocumentModel[]}
+export type ReturnTypeListDocuments = {listCsvDocuments: PaginationResultModel<CsvDocumentModel>}
 
 export const QUERY_GET_DOCUMENT = gql`
     query GetCsvDocument($id: ID!) {
@@ -38,12 +45,19 @@ export const MUTATE_DELETE_DOCUMENT = gql`
 export type ReturnTypeDeleteDocument = {deleteCsvDocument: {id: string}}
 
 export const QUERY_LIST_DOCUMENT_RECORDS = gql`
-    query ListCsvDocumentRecords($documentId: ID!) {
-        listCsvDocumentRecords(id: $documentId) {
-            id
-            documentId
-            providedValue
-            data
+    query ListCsvDocumentRecords($documentId: ID!, $pagination: PaginationInput) {
+        listCsvDocumentRecords(id: $documentId, pagination: $pagination) {
+            metadata {
+                totalCount
+                pageSize
+                page
+            }
+            data {
+                id
+                documentId
+                providedValue
+                data
+            }
         }
     }
 `
@@ -54,7 +68,7 @@ export interface CsvDocumentRecordBackendModel {
     data: string;
 }
 
-export type ReturnTypeListDocumentRecords = {listCsvDocumentRecords: CsvDocumentRecordBackendModel[]}
+export type ReturnTypeListDocumentRecords = {listCsvDocumentRecords: PaginationResultModel<CsvDocumentRecordBackendModel>}
 
 export const QUERY_LIST_PREDICTIONS = gql`
     query ListCsvPredictions($documentId: ID!) {
@@ -79,20 +93,27 @@ export const QUERY_LIST_PREDICTIONS = gql`
 export type ReturnTypeListPredictions = {listCsvPredictions: CsvPredictionModel[]}
 
 export const QUERY_LIST_PREDICTION_RECORDS = gql`
-    query ListCsvPredictionRecords($predictionId: ID!, $options: CsvPredictionRecordOptions) {
-        listCsvPredictionRecords(id: $predictionId, options: $options) {
-            id
-            documentId
-            predictionId
-            csvRecordId
-            providedValue
-            predictionValue
-            confidence
-            agree
+    query ListCsvPredictionRecords($predictionId: ID!, $pagination: PaginationInput, $options: CsvPredictionRecordOptions) {
+        listCsvPredictionRecords(id: $predictionId, pagination: $pagination, options: $options) {
+            metadata {
+                totalCount
+                page
+                pageSize
+            }
+            data {
+                id
+                documentId
+                predictionId
+                csvRecordId
+                providedValue
+                predictionValue
+                confidence
+                agree
+            }
         }
     }
 `
-export type ReturnTypeListPredictionRecords = {listCsvPredictionRecords: CsvPredictionResultModel[]}
+export type ReturnTypeListPredictionRecords = {listCsvPredictionRecords: PaginationResultModel<CsvPredictionResultModel>}
 
 export const MUTATION_CREATE_PREDICTION = gql`
     mutation CreateCsvPrediction($documentId: ID!) {
