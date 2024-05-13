@@ -17,7 +17,7 @@
     "@carbon/react": "^1.40.0",
     "@carbon/web-components": "^2.8.0",
     "@ibm-watson/assistant-web-chat-react": "^1.0.4",
-    "dayjs": "^1.11.10",
+    "dayjs": "^1.11.11",
     "graphql-ws": "^5.14.1",
     "ibmcloud-appid-js": "^1.0.1",
     "jotai": "^2.7.0",
