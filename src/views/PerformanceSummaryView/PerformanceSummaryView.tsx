@@ -18,6 +18,14 @@ export const PerformanceSummaryView: React.FunctionComponent<PerformanceSummaryV
     const disagreeAboveThresholdPercent = formatPercent(data.disagreeAboveThreshold, data.totalCount)
     const disagreeBelowThresholdPercent = formatPercent(data.disagreeBelowThreshold, data.totalCount)
 
+    if (data.agreeAboveThreshold === 0 && data.agreeBelowThreshold === 0) {
+        return (<div style={{display: 'grid', fontSize: 'small'}}>
+            <div style={{gridColumn: 1}}>&nbsp;</div><div style={{fontWeight: 'bold', textAlign: 'center', gridColumn: 2}}>Result</div><div style={{fontWeight: 'bold', textAlign: 'center', gridColumn: 3}}>Corr</div>
+            <div style={{gridColumn: 1, fontWeight: 'bold'}}>Above</div><div style={{gridColumn: 2, textAlign: 'center'}}>{data.disagreeAboveThreshold} {disagreeAboveThresholdPercent}</div><div style={{gridColumn: 3, textAlign: 'center', gridRowStart: 2, gridRowEnd: 3}}>{data.correctedRecords || 0}</div>
+            <div style={{gridColumn: 1, fontWeight: 'bold'}}>Below</div><div style={{gridColumn: 2, textAlign: 'center'}}>{data.disagreeBelowThreshold} {disagreeBelowThresholdPercent}</div>
+        </div>)
+    }
+
     return (<div style={{display: 'grid', fontSize: 'small'}}>
         <div style={{gridColumn: 1}}>&nbsp;</div><div style={{fontWeight: 'bold', gridColumn: 2, textAlign: 'center'}}>Agree</div><div style={{fontWeight: 'bold', textAlign: 'center', gridColumn: 3}}>Disagree</div><div style={{fontWeight: 'bold', textAlign: 'center', gridColumn: 4}}>Corr</div>
         <div style={{gridColumn: 1, fontWeight: 'bold'}}>Above</div><div style={{gridColumn: 2, textAlign: 'center'}}>{data.agreeAboveThreshold} {agreeAboveThresholdPercent}</div><div style={{gridColumn: 3, textAlign: 'center'}}>{data.disagreeAboveThreshold} {disagreeAboveThresholdPercent}</div><div style={{gridColumn: 4, textAlign: 'center', gridRowStart: 2, gridRowEnd: 3}}>{data.correctedRecords || 0}</div>

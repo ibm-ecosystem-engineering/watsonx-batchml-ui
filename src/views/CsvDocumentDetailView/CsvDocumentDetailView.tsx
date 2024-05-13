@@ -7,9 +7,10 @@ import {useParams} from "react-router-dom";
 import {DataTableHeader, Loading, Select, SelectItem} from "@carbon/react";
 
 import {
-    predictionRecordFilterAtom, recordsPageAtom, recordsPageSizeAtom,
+    predictionRecordFilterAtom,
+    recordsPageAtom,
+    recordsPageSizeAtom,
     selectedCsvPredictionsLoadable,
-    selectedCsvRecordsLoadable,
     selectedDocumentIdAtom,
     selectedDocumentLoadable,
     selectedPredictionAtom,
@@ -18,8 +19,9 @@ import {
 import {DataTable, SimpleTable, TableRow} from "../../components";
 import {
     CsvDocumentModel,
-    CsvDocumentRecordModel,
-    CsvPredictionModel, CsvPredictionRecordFilter, CsvPredictionRecordFilterValues,
+    CsvPredictionModel,
+    CsvPredictionRecordFilter,
+    CsvPredictionRecordFilterValues,
     CsvPredictionResultModel,
 } from "../../models";
 import {first} from "../../utils";
@@ -81,16 +83,9 @@ interface PredictionSummaryViewProps {
 const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps> = ({document}: PredictionSummaryViewProps) => {
 
     const loadablePredictions = useAtomValue(selectedCsvPredictionsLoadable)
-    const loadableResults = useAtomValue(selectedCsvRecordsLoadable)
     const [showAddModal, setShowAddModal] = useState(false)
     const [predictionId, setPredictionId] = useState('')
     const setSelectedPrediction = useSetAtom(selectedPredictionAtom)
-
-    if (loadableResults.state === 'loading') {
-        return (<LoadableLoading />)
-    } else if (loadableResults.state === 'hasError') {
-        return (<LoadableError text="Error loading records" />)
-    }
 
     if (loadablePredictions.state === 'loading') {
         return (<LoadableLoading />)
@@ -156,7 +151,7 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
             rowData={rowData}
             onRowClick={setSelectedPredictionId}
         />
-        <PredictionDetailView documents={loadableResults.data.data} show={!showAddModal} />
+        <PredictionDetailView show={!showAddModal} />
     </div>)
 }
 
@@ -184,11 +179,10 @@ const parseISOString = (s: string) => {
 }
 
 interface PredictionDetailViewProps {
-    documents: CsvDocumentRecordModel[];
     show: boolean;
 }
 
-const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> = ({documents, show}: PredictionDetailViewProps = {documents: [], show: true}) => {
+const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> = ({show}: PredictionDetailViewProps = {show: true}) => {
 
     const loadable = useAtomValue(selectedPredictionRecordsLoadable)
     const prediction = useAtomValue(selectedPredictionAtom)
@@ -205,21 +199,23 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         return (<LoadableLoading />)
     } else if (loadable.state === 'hasError') {
         return (<LoadableError text="Error loading prediction records"/>)
-    } else if (documents.length === 0 || loadable.data.data.length === 0) {
+    } else if (loadable.data.data.length === 0) {
         return (<></>)
     }
+
+    const firstRecord = loadable.data.data[0]
 
     const headerData: DataTableHeader[] = [
         {header: 'Prediction', key: 'predictionValue'},
         {header: 'Confidence', key: 'confidence'},
         {header: 'Agree', key: 'agree'}
     ]
-        .concat(Object.keys(documents[0].data)
+        .concat(Object.keys(firstRecord.data)
         .filter(val => val !== 'id' && val !== 'documentId' && val !== 'providedValue')
         .map(key => ({key, header: key})))
 
     const totalCount = loadable.data.metadata.totalCount
-    const rowData = loadable.data.data.map(predictionResultToRowData(documents))
+    const rowData = loadable.data.data.map(predictionResultToRowData)
 
     const handleFilterChange = (event: ChangeEvent<HTMLSelectElement>) => {
         const value: CsvPredictionRecordFilter = CsvPredictionRecordFilterValues.lookup(event.target.value)
@@ -242,26 +238,17 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
     </div>)
 }
 
-const predictionResultToRowData = (documents: CsvDocumentRecordModel[]) => {
-    return (row: CsvPredictionResultModel) => {
-        const doc: Optional<CsvDocumentRecordModel> = first(documents.filter(val => val.id === row.csvRecordId))
-
-        if (!doc.isPresent()) {
-            console.log('Document not found: ' + row.csvRecordId)
-            return undefined
+const predictionResultToRowData = (row: CsvPredictionResultModel) => {
+    return Object.assign(
+        {},
+        row.data,
+        {
+            providedValue: row.providedValue,
+            predictionValue: valueToPercentage(row.predictionValue),
+            confidence: valueToPercentage(row.confidence),
+            agree: row.agree ? 'true' : 'false'
         }
-
-        return Object.assign(
-            {},
-            doc.get().data,
-            {
-                providedValue: row.providedValue,
-                predictionValue: valueToPercentage(row.predictionValue),
-                confidence: valueToPercentage(row.confidence),
-                agree: row.agree ? 'true' : 'false'
-            }
-        )
-    }
+    )
 }
 
 const valueToPercentage = (value: unknown): string => {

@@ -19,7 +19,7 @@ export const Pagination: React.FunctionComponent<PaginationProps> = ({page, page
     }
 
     const start = ((page - 1) * pageSize) + 1;
-    const end: number = (page * pageSize);
+    const end: number = Math.min((page * pageSize), totalCount);
     const totalText = totalCount ? ` of ${totalCount}` : '';
     const totalPages = totalCount ? ((totalCount / pageSize) + (totalCount % pageSize > 0 ? 1 : 0)) : Number.MAX_SAFE_INTEGER
 
