@@ -2,12 +2,12 @@
 // @ts-ignore
 import React, {ChangeEvent, useState} from 'react';
 import Optional from "optional-js";
-import {useAtomValue, useSetAtom} from "jotai";
+import {useAtom, useAtomValue, useSetAtom} from "jotai";
 import {useParams} from "react-router-dom";
 import {DataTableHeader, Loading, Select, SelectItem} from "@carbon/react";
 
 import {
-    predictionRecordFilterAtom,
+    predictionRecordFilterAtom, recordsPageAtom, recordsPageSizeAtom,
     selectedCsvPredictionsLoadable,
     selectedCsvRecordsLoadable,
     selectedDocumentIdAtom,
@@ -62,7 +62,8 @@ const CsvDocumentDetailViewInternal: React.FunctionComponent<CsvDocumentDetailVi
     const documentSummary: TableRow[] = [
         {label: 'Name:', value: document.name},
         {label: 'Description:', value: document.description},
-        {label: 'Original document:', value: (<a href={document.originalUrl}>Download</a>)}
+        {label: 'Original document:', value: (<a href={document.originalUrl}>Download</a>)},
+        {label: 'Status:', value: document.status}
     ]
 
     return (<div>
@@ -155,7 +156,7 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
             rowData={rowData}
             onRowClick={setSelectedPredictionId}
         />
-        <PredictionDetailView documents={loadableResults.data} show={!showAddModal} />
+        <PredictionDetailView documents={loadableResults.data.data} show={!showAddModal} />
     </div>)
 }
 
@@ -193,6 +194,8 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
     const prediction = useAtomValue(selectedPredictionAtom)
     const filter = useAtomValue(predictionRecordFilterAtom)
     const setFilter = useSetAtom(predictionRecordFilterAtom)
+    const [page, setPage] = useAtom(recordsPageAtom)
+    const pageSize = useAtomValue(recordsPageSizeAtom)
 
     if (!show) {
         return (<></>)
@@ -202,7 +205,7 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         return (<LoadableLoading />)
     } else if (loadable.state === 'hasError') {
         return (<LoadableError text="Error loading prediction records"/>)
-    } else if (documents.length === 0 || loadable.data.length === 0) {
+    } else if (documents.length === 0 || loadable.data.data.length === 0) {
         return (<></>)
     }
 
@@ -215,7 +218,8 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         .filter(val => val !== 'id' && val !== 'documentId' && val !== 'providedValue')
         .map(key => ({key, header: key})))
 
-    const rowData = loadable.data.map(predictionResultToRowData(documents))
+    const totalCount = loadable.data.metadata.totalCount
+    const rowData = loadable.data.data.map(predictionResultToRowData(documents))
 
     const handleFilterChange = (event: ChangeEvent<HTMLSelectElement>) => {
         const value: CsvPredictionRecordFilter = CsvPredictionRecordFilterValues.lookup(event.target.value)
@@ -234,7 +238,7 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
             <Select id={'prediction-filter'} value={filter} size="sm" labelText="Filter" onChange={handleFilterChange}>{CsvPredictionRecordFilterValues.values()
                 .map(val => (<SelectItem key={val.value} text={val.label} value={val.value} />))}</Select>
         </div>
-        <DataTable headerData={headerData} rowData={rowData} />
+        <DataTable headerData={headerData} rowData={rowData} totalCount={totalCount} page={page} pageSize={pageSize} setPage={setPage} />
     </div>)
 }
 

@@ -16,6 +16,7 @@ import {
 } from "@carbon/react";
 
 import './DataTable.scss';
+import {Pagination} from "../Pagination";
 
 export interface SortableDataTableHeader extends DataTableHeader {
     isSortable?: boolean;
@@ -27,6 +28,11 @@ export interface DataTableProps<ColType extends any[]> {
     onRowClick?: (id: string) => void;
     onToolbarButtonClick?: () => void;
     toolbarButtonText?: string;
+    page?: number,
+    pageSize?: number,
+    totalCount?: number,
+    setPage?: (page: number) => void,
+    setPageSize?: (pageSize: number) => void,
 }
 
 export const DataTable: React.FunctionComponent<DataTableProps<any[]>> = <ColType extends any[],> (props: DataTableProps<ColType>) => {
@@ -47,6 +53,7 @@ export const DataTable: React.FunctionComponent<DataTableProps<any[]>> = <ColTyp
 
     const onRowClick = props.onRowClick || (() => {return});
     return (
+        <>
         <InnerDataTable rows={props.rowData} headers={props.headerData}>
             {({ rows, headers, getHeaderProps, getTableProps, getToolbarProps, onInputChange }) => (
                 <TableContainer>
@@ -79,5 +86,7 @@ export const DataTable: React.FunctionComponent<DataTableProps<any[]>> = <ColTyp
                 </TableContainer>
             )}
         </InnerDataTable>
+        <Pagination page={props.page} pageSize={props.pageSize} totalCount={props.totalCount} setPage={props.setPage} />
+    </>
     )
 }

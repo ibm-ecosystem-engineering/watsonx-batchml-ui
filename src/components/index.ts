@@ -8,3 +8,4 @@ export * from './HydrateAtoms';
 export * from './InfoRow';
 export * from './EnabledButton';
 export * from './SimpleTable';
+export * from './Pagination';
