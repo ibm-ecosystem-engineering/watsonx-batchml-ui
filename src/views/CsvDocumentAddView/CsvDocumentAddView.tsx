@@ -1,7 +1,16 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import React, {useState} from 'react';
-import {Button, ComposedModal, FileUploader, ModalBody, ModalFooter, ModalHeader, TextArea} from "@carbon/react";
+import {
+    Button,
+    ComposedModal,
+    FileUploader,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    TextArea,
+    TextInput
+} from "@carbon/react";
 
 import './CsvDocumentAddView.scss'
 import {CsvDocumentModel} from "../../models";
@@ -22,11 +31,15 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
     }
 
     let descriptionField;
+    let worksheetField;
+    let worksheetStartField;
 
     const handleSubmit = () => {
         const fileUploadService: FileUploadApi = fileUploadApi();
 
         const description: string = descriptionField.value
+        const worksheet: string = worksheetField.value
+        const worksheetStartRow: number = worksheetStartField.value
 
         console.log('Handle submit: ', {description, fileList})
 
@@ -37,7 +50,7 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
         setFileStatus('uploading')
 
         // TODO handle document remove
-        Promise.all(files.map(f => fileUploadService.uploadFile(f.name, f, description)))
+        Promise.all(files.map(f => fileUploadService.uploadFile(f.name, f, description, worksheet, worksheetStartRow)))
             .then((result: CsvDocumentModel[]) => {
                 console.log('Upload document complete')
                 setFileStatus('complete');
@@ -51,7 +64,9 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
             })
     }
 
-    const acceptList = ['.csv', '.xlsx', '.xlsb']
+    const acceptList = ['.csv', '.xlsx', '.xlsb', '.xlsm']
+    const ciasRE: RegExp = /.*cias.*/i
+    const ierpRE: RegExp = /.*ierp.*/i
 
     return (<ComposedModal open={true} onClose={() => onNewDocument()} className="csv-document-add-modal">
         <ModalHeader label="Documents">Add document</ModalHeader>
@@ -69,9 +84,28 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
                 disabled={false}
                 iconDescription="Delete file"
                 name=""
-                onChange={(event: {target: {files: FileList}}) => setFileList(event.target.files)}
+                onChange={(event: {target: {files: FileList}}) => {
+                    const files: File[] = fileListUtil(event.target.files)
+
+                    if (files.length > 0) {
+                        const filename: string = files[0].name
+
+                        const {sheetName, start} = ciasRE.test(filename)
+                            ? {sheetName: 'Treasury & Tax', start: 3}
+                            : (ierpRE.test(filename)
+                                ? {sheetName: 'Payment Proposal Details', start: 2}
+                                : {sheetName: '', start: 0})
+
+                        worksheetField.value = sheetName
+                        worksheetStartField.value = start
+                    }
+
+                    return setFileList(event.target.files)
+                }}
             />
             <TextArea id="add-document-description" labelText="Description:" ref={(input) => descriptionField = input}/>
+            <TextInput id="add-document-worksheet" labelText="Worksheet name:" ref={(input) => worksheetField = input} />
+            <TextInput id="add-document-worksheet-start" labelText="Worksheet start row:" type="number" ref={(input) => worksheetStartField = input} />
         </ModalBody>
         <ModalFooter>
             <Button kind="tertiary" onClick={() => onNewDocument()}>Cancel</Button>
@@ -82,6 +116,10 @@ export const CsvDocumentAddView: React.FunctionComponent<CsvDocumentAddViewProps
 
 const fileListUtil = (fileList: FileList): File[] => {
     const files: File[] = [];
+
+    if (!fileList) {
+        return files
+    }
 
     for (let i = 0; i < fileList.length; i++) {
         const file: File | null = fileList.item(i);
