@@ -77,7 +77,7 @@ export interface CsvPredictionModel {
     date: string;
     predictionUrl: string;
     predictions: CsvPredictionResultModel[];
-    performanceSummary: PerformanceSummaryModel;
+    performanceSummary?: PerformanceSummaryModel;
 }
 
 export interface CsvPredictionResultModel {

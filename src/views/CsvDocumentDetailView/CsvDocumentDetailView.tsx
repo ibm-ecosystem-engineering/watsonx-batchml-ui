@@ -163,8 +163,8 @@ const csvPredictionToRow = (uploadHandler: (data: CsvPredictionModel) => void) =
             {
                 date: parseISOString(data.date).toDateString(),
                 predictionUrl: (<a href={data.predictionUrl}>download</a>),
-                totalCount: data.performanceSummary.totalCount,
-                confidenceThreshold: (data.performanceSummary.confidenceThreshold * 100) + '%',
+                totalCount: data.performanceSummary?.totalCount || 0,
+                confidenceThreshold: (data.performanceSummary?.confidenceThreshold * 100 || 0) + '%',
                 performanceSummary: (<PerformanceSummaryView data={data.performanceSummary} />),
                 upload: (<a onClick={() => uploadHandler(data)}>upload updates</a>)
             }

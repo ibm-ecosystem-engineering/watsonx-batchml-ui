@@ -13,6 +13,10 @@ export const PerformanceSummaryView: React.FunctionComponent<PerformanceSummaryV
         return '(' + (value * 100).toFixed(2) + '%)'
     }
 
+    if (!data) {
+        return (<></>)
+    }
+
     const agreeAboveThresholdPercent = formatPercent(data.agreeAboveThreshold, data.totalCount)
     const agreeBelowThresholdPercent = formatPercent(data.agreeBelowThreshold, data.totalCount)
     const disagreeAboveThresholdPercent = formatPercent(data.disagreeAboveThreshold, data.totalCount)
