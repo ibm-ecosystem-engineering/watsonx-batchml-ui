@@ -85,7 +85,7 @@ export interface CsvPredictionResultModel {
     documentId: string;
     predictionId: string;
     csvRecordId: string;
-    providedValue: string;
+    providedValue?: string;
     predictionValue: string;
     confidence: number;
     agree: boolean;
