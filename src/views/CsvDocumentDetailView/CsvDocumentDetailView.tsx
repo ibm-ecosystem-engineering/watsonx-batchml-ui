@@ -210,9 +210,10 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         {header: 'Confidence', key: 'confidence'},
         {header: 'Agree', key: 'agree'}
     ]
+        .concat(prediction.predictionField ? [{header: prediction.predictionField, key: prediction.predictionField}] : [])
         .concat(Object.keys(firstRecord.data)
-        .filter(val => val !== 'id' && val !== 'documentId' && val !== 'providedValue')
-        .map(key => ({key, header: key})))
+            .filter(val => val !== 'id' && val !== 'documentId' && val !== 'providedValue' && val !== prediction.predictionField)
+            .map(key => ({key, header: key})))
 
     const totalCount = loadable.data.metadata.totalCount
     const rowData = loadable.data.data.map(predictionResultToRowData)

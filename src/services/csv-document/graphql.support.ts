@@ -77,6 +77,7 @@ export const QUERY_LIST_PREDICTIONS = gql`
             documentId
             model
             date
+            predictionField
             predictionUrl
             performanceSummary {
                 totalCount
