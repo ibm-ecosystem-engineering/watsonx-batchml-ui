@@ -76,6 +76,7 @@ export interface CsvPredictionModel {
     model: string;
     date: string;
     predictionUrl: string;
+    predictionField?: string;
     predictions: CsvPredictionResultModel[];
     performanceSummary?: PerformanceSummaryModel;
 }
@@ -125,7 +126,8 @@ export enum CsvPredictionRecordFilter {
     All = 'All',
     AllDisagree = 'AllDisagree',
     AllBelowConfidence = 'AllBelowConfidence',
-    DisagreeBelowConfidence = 'DisagreeBelowConfidence'
+    DisagreeBelowConfidence = 'DisagreeBelowConfidence',
+    DisagreeAboveConfidence = 'DisagreeAboveConfidence'
 }
 
 export const CsvPredictionRecordFilterValues = {
@@ -133,9 +135,10 @@ export const CsvPredictionRecordFilterValues = {
     AllDisagree: new SelectValue({value: CsvPredictionRecordFilter.AllDisagree, label: 'All disagree'}),
     AllBelowConfidence: new SelectValue({value: CsvPredictionRecordFilter.AllBelowConfidence, label: 'All below confidence'}),
     DisagreeLowConfidence: new SelectValue({value: CsvPredictionRecordFilter.DisagreeBelowConfidence, label: 'Disagree below confidence'}),
+    DisagreeHighConfidence: new SelectValue({value: CsvPredictionRecordFilter.DisagreeAboveConfidence, label: 'Disagree above confidence'}),
 
     values: () => {
-        return [CsvPredictionRecordFilterValues.All, CsvPredictionRecordFilterValues.AllDisagree, CsvPredictionRecordFilterValues.AllBelowConfidence, CsvPredictionRecordFilterValues.DisagreeLowConfidence]
+        return [CsvPredictionRecordFilterValues.All, CsvPredictionRecordFilterValues.AllDisagree, CsvPredictionRecordFilterValues.AllBelowConfidence, CsvPredictionRecordFilterValues.DisagreeHighConfidence, CsvPredictionRecordFilterValues.DisagreeLowConfidence]
     },
     lookup: (value: string): CsvPredictionRecordFilter | undefined => {
         switch (value) {
@@ -147,6 +150,8 @@ export const CsvPredictionRecordFilterValues = {
                 return CsvPredictionRecordFilter.AllBelowConfidence;
             case CsvPredictionRecordFilter.DisagreeBelowConfidence:
                 return CsvPredictionRecordFilter.DisagreeBelowConfidence;
+            case CsvPredictionRecordFilter.DisagreeAboveConfidence:
+                return CsvPredictionRecordFilter.DisagreeAboveConfidence;
             default:
                 return;
         }
