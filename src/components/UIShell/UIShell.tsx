@@ -136,7 +136,7 @@ export const UIShell: React.FunctionComponent<UIShellProps> = (props: UIShellPro
                                     onClick={onClickSideNavExpand}
                                     isActive={isSideNavExpanded}
                                 />
-                                <HeaderName href="#" prefix={props.prefix}>
+                                <HeaderName href="/" prefix={props.prefix}>
                                     &nbsp;{props.title}
                                 </HeaderName>
                                 {renderHeaderNavigation(props)}
