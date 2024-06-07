@@ -85,6 +85,7 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
     const loadablePredictions = useAtomValue(selectedCsvPredictionsLoadable)
     const [showAddModal, setShowAddModal] = useState(false)
     const [predictionId, setPredictionId] = useState('')
+    const selectedPrediction = useAtomValue(selectedPredictionAtom)
     const setSelectedPrediction = useSetAtom(selectedPredictionAtom)
 
     if (loadablePredictions.state === 'loading') {
@@ -99,6 +100,32 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
     }
 
     const predictions: CsvPredictionModel[] = loadablePredictions.data
+
+    if (predictions.length === 1) {
+        const prediction = predictions[0]
+        if (selectedPrediction?.id !== prediction.id) {
+            console.log('Setting selected prediction: ', prediction)
+            setSelectedPrediction(prediction)
+        }
+
+        const predictionValues: TableRow[] = [
+            {label: 'Date:', value: parseISOString(prediction.date).toDateString()},
+            {label: 'Model:', value: prediction.model},
+            {label: 'Original document:', value: (<a href={prediction.predictionUrl}>download</a>)},
+            {label: 'Total count:', value: prediction.performanceSummary?.totalCount || 0},
+            {label: 'Threshold:', value: (prediction.performanceSummary?.confidenceThreshold * 100 || 0) + '%'},
+            {label: 'Updates:', value: (<a href="#" onClick={() => showUpdate(prediction)}>upload updates</a>)},
+            {label: 'Performance:', value: (<PerformanceSummaryView data={prediction.performanceSummary} />)}
+        ]
+
+        return (<>
+            <div style={{width: '600px', margin: '0 auto'}}>
+                <div style={{fontWeight: 'bold', fontSize: 'larger', textAlign: 'left', paddingBottom: '8px'}}>Prediction</div>
+                <SimpleTable rows={predictionValues} />
+            </div>
+            <PredictionDetailView show={true} />
+        </>)
+    }
 
     const rowData = predictions.map(csvPredictionToRow(showUpdate))
 
