@@ -19,7 +19,7 @@ export abstract class CsvDocumentApi {
 
     abstract listCsvPredictions(documentId: string): Promise<CsvPredictionModel[]>
     abstract createCsvPrediction(documentId: string, model?: string): Promise<CsvPredictionModel>
-    abstract listCsvPredictionRecords(predictionId: string, pagination: PaginationInputModel, options?: {filter?: CsvPredictionRecordFilter}): Promise<PaginationResultModel<CsvPredictionResultModel>>
+    abstract listCsvPredictionRecords(predictionId: string, pagination: PaginationInputModel, options?: {filter?: CsvPredictionRecordFilter, excludeSkip?: boolean}): Promise<PaginationResultModel<CsvPredictionResultModel>>
 
     abstract observeCsvDocumentUpdates(): Observable<CsvDocumentModel>
     abstract observeCsvPredictionUpdates(): Observable<CsvPredictionModel>

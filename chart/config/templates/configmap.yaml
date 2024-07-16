@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "config.fullname" . }}
+  labels:
+    {{- include "config.labels" . | nindent 4 }}
+data:
+  API_TARGET: {{ required "API target url required" .Values.apiTarget | quote }}
+  GRAPHQL_TARGET: {{ required "GraphQL target url required" .Values.graphqlTarget | quote }}
+  SOCKET_TARGET: {{ required "Socket target url required" .Values.socketTarget | quote }}

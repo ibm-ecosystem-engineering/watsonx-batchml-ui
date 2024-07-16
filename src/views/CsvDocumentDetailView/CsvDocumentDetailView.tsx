@@ -4,9 +4,10 @@ import React, {ChangeEvent, useState} from 'react';
 import Optional from "optional-js";
 import {useAtom, useAtomValue, useSetAtom} from "jotai";
 import {useParams} from "react-router-dom";
-import {DataTableHeader, Loading, Select, SelectItem} from "@carbon/react";
+import {DataTableHeader, Loading, Select, SelectItem, Toggle} from "@carbon/react";
 
 import {
+    predictionRecordExcludeSkip,
     predictionRecordFilterAtom,
     recordsPageAtom,
     recordsPageSizeAtom,
@@ -112,6 +113,7 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
             {label: 'Date:', value: parseISOString(prediction.date).toDateString()},
             {label: 'Model:', value: prediction.model},
             {label: 'Original document:', value: (<a href={prediction.predictionUrl}>download</a>)},
+            {label: 'Grand total:', value: prediction.performanceSummary?.grandTotal || 0},
             {label: 'Total count:', value: prediction.performanceSummary?.totalCount || 0},
             {label: 'Threshold:', value: (prediction.performanceSummary?.confidenceThreshold * 100 || 0) + '%'},
             {label: 'Updates:', value: (<a href="#" onClick={() => showUpdate(prediction)}>upload updates</a>)},
@@ -138,6 +140,9 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
     }, {
         key: 'predictionUrl',
         header: 'Download'
+    }, {
+        key: 'grandTotal',
+        header: 'Grand total'
     }, {
         key: 'totalCount',
         header: 'Record count'
@@ -190,6 +195,7 @@ const csvPredictionToRow = (uploadHandler: (data: CsvPredictionModel) => void) =
             {
                 date: parseISOString(data.date).toDateString(),
                 predictionUrl: (<a href={data.predictionUrl}>download</a>),
+                grandTotal: data.performanceSummary?.grandTotal || 0,
                 totalCount: data.performanceSummary?.totalCount || 0,
                 confidenceThreshold: (data.performanceSummary?.confidenceThreshold * 100 || 0) + '%',
                 performanceSummary: (<PerformanceSummaryView data={data.performanceSummary} />),
@@ -215,6 +221,8 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
     const prediction = useAtomValue(selectedPredictionAtom)
     const filter = useAtomValue(predictionRecordFilterAtom)
     const setFilter = useSetAtom(predictionRecordFilterAtom)
+    const excludeSkip = useAtomValue(predictionRecordExcludeSkip)
+    const setExcludeSkip = useSetAtom(predictionRecordExcludeSkip)
     const [page, setPage] = useAtom(recordsPageAtom)
     const pageSize = useAtomValue(recordsPageSizeAtom)
 
@@ -235,7 +243,7 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
     const headerData: DataTableHeader[] = [
         {header: 'Prediction', key: 'predictionValue'},
         {header: 'Confidence', key: 'confidence'},
-        {header: 'Agree', key: 'agree'}
+        {header: 'Agree', key: 'agree'},
     ]
         .concat(prediction.predictionField ? [{header: prediction.predictionField, key: prediction.predictionField}] : [])
         .concat(Object.keys(firstRecord.data)
@@ -256,11 +264,35 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         setFilter(value)
     }
 
+    const handleExcludeSkipToggle = () => {
+        console.log('Toggle toggled')
+        setExcludeSkip(!excludeSkip)
+    }
+
+    const handleExcludeSkipClick = () => {
+        console.log('Toggle clicked')
+        setExcludeSkip(!excludeSkip)
+    }
+
     return (<div style={{paddingTop: '20px'}}>
         <div style={{textAlign: 'left', fontWeight: 'bold'}}>Prediction results: {prediction.model} - {parseISOString(prediction.date).toDateString()}</div>
-        <div style={{width: '250px'}}>
+        <div style={{overflow: 'auto', paddingTop: '8px', paddingBottom: '8px'}}>
+        <div style={{width: '250px', float: 'left'}}>
             <Select id={'prediction-filter'} value={filter} size="sm" labelText="Filter" onChange={handleFilterChange}>{CsvPredictionRecordFilterValues.values()
                 .map(val => (<SelectItem key={val.value} text={val.label} value={val.value} />))}</Select>
+        </div>
+        <div style={{width:'250px', float: 'right'}} onClick={handleExcludeSkipClick}>
+            <Toggle id="toggle-exclude-skip"
+                    aria-labelledby="Hide skip records"
+                    labelA="No"
+                    labelB="Yes"
+                    labelText="Hide skip records"
+                    disabled={false}
+                    readOnly={false}
+                    onToggle={handleExcludeSkipToggle}
+                    onClick={handleExcludeSkipClick}
+                    toggled={excludeSkip} />
+        </div>
         </div>
         <DataTable headerData={headerData} rowData={rowData} totalCount={totalCount} page={page} pageSize={pageSize} setPage={setPage} />
     </div>)
@@ -274,7 +306,8 @@ const predictionResultToRowData = (row: CsvPredictionResultModel) => {
             providedValue: row.providedValue,
             predictionValue: valueToPercentage(row.predictionValue),
             confidence: valueToPercentage(row.confidence),
-            agree: row.agree ? 'true' : 'false'
+            agree: row.agree ? 'true' : 'false',
+            skip: row.skip ? 'true' : 'false'
         }
     )
 }

@@ -84,6 +84,7 @@ export const selectedPredictionRecordsAtom: Atom<Promise<PaginationResultModel<C
     get => {
         const prediction: CsvPredictionModel | undefined = get(selectedPredictionAtom)
         const filter = get(predictionRecordFilterAtom)
+        const excludeSkip = get(predictionRecordExcludeSkip)
         const page = get(recordsPageAtom)
         const pageSize = get(recordsPageSizeAtom)
 
@@ -96,10 +97,12 @@ export const selectedPredictionRecordsAtom: Atom<Promise<PaginationResultModel<C
 
         console.log('Looking with filter: ', {filter})
 
-        return service.listCsvPredictionRecords(prediction.id, {page, pageSize}, {filter})
+        return service.listCsvPredictionRecords(prediction.id, {page, pageSize}, {filter, excludeSkip})
     }
 )
 
 export const selectedPredictionRecordsLoadable = loadable(selectedPredictionRecordsAtom)
 
 export const predictionRecordFilterAtom = atom(CsvPredictionRecordFilter.All)
+
+export const predictionRecordExcludeSkip = atom(true)

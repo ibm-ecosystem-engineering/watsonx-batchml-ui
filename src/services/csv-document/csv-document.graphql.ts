@@ -107,7 +107,7 @@ export class CsvDocumentGraphql implements CsvDocumentApi {
             .then((result: FetchResult<ReturnTypeCreatePrediction>) => result.data.createCsvPrediction)
     }
 
-    async listCsvPredictionRecords(predictionId: string, pagination: PaginationInputModel, options?: {filter?: CsvPredictionRecordFilter}): Promise<PaginationResultModel<CsvPredictionResultModel>> {
+    async listCsvPredictionRecords(predictionId: string, pagination: PaginationInputModel, options?: {filter?: CsvPredictionRecordFilter, excludeSkip?: boolean}): Promise<PaginationResultModel<CsvPredictionResultModel>> {
         const variables = options ? {predictionId, pagination, options} : {predictionId, pagination}
 
         console.log('Querying csv prediction records: ', variables)

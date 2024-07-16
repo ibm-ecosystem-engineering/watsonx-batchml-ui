@@ -90,12 +90,14 @@ export interface CsvPredictionResultModel {
     predictionValue: string;
     confidence: number;
     agree: boolean;
+    skip: boolean;
     data: Record;
 }
 
 // performance summary (e.g. number of agree/disagree, above/below confidence threshold
 export interface PerformanceSummaryModel {
     totalCount: number;
+    grandTotal: number;
     confidenceThreshold: number;
     agreeAboveThreshold: number;
     agreeBelowThreshold: number;
@@ -126,6 +128,7 @@ export enum CsvPredictionRecordFilter {
     All = 'All',
     AllDisagree = 'AllDisagree',
     AllBelowConfidence = 'AllBelowConfidence',
+    AgreeBelowConfidence = 'AgreeBelowConfidence',
     DisagreeBelowConfidence = 'DisagreeBelowConfidence',
     DisagreeAboveConfidence = 'DisagreeAboveConfidence'
 }
@@ -134,11 +137,12 @@ export const CsvPredictionRecordFilterValues = {
     All: new SelectValue({value: CsvPredictionRecordFilter.All, label: 'All predictions'}),
     AllDisagree: new SelectValue({value: CsvPredictionRecordFilter.AllDisagree, label: 'All disagree'}),
     AllBelowConfidence: new SelectValue({value: CsvPredictionRecordFilter.AllBelowConfidence, label: 'All below confidence'}),
+    AgreeBelowConfidence: new SelectValue({value: CsvPredictionRecordFilter.AgreeBelowConfidence, label: 'Agree below confidence'}),
     DisagreeLowConfidence: new SelectValue({value: CsvPredictionRecordFilter.DisagreeBelowConfidence, label: 'Disagree below confidence'}),
     DisagreeHighConfidence: new SelectValue({value: CsvPredictionRecordFilter.DisagreeAboveConfidence, label: 'Disagree above confidence'}),
 
     values: () => {
-        return [CsvPredictionRecordFilterValues.All, CsvPredictionRecordFilterValues.AllDisagree, CsvPredictionRecordFilterValues.AllBelowConfidence, CsvPredictionRecordFilterValues.DisagreeHighConfidence, CsvPredictionRecordFilterValues.DisagreeLowConfidence]
+        return [CsvPredictionRecordFilterValues.All, CsvPredictionRecordFilterValues.AllDisagree, CsvPredictionRecordFilterValues.AllBelowConfidence, CsvPredictionRecordFilterValues.AgreeBelowConfidence, CsvPredictionRecordFilterValues.DisagreeHighConfidence, CsvPredictionRecordFilterValues.DisagreeLowConfidence]
     },
     lookup: (value: string): CsvPredictionRecordFilter | undefined => {
         switch (value) {
@@ -148,6 +152,8 @@ export const CsvPredictionRecordFilterValues = {
                 return CsvPredictionRecordFilter.AllDisagree;
             case CsvPredictionRecordFilter.AllBelowConfidence:
                 return CsvPredictionRecordFilter.AllBelowConfidence;
+            case CsvPredictionRecordFilter.AgreeBelowConfidence:
+                return CsvPredictionRecordFilter.AgreeBelowConfidence;
             case CsvPredictionRecordFilter.DisagreeBelowConfidence:
                 return CsvPredictionRecordFilter.DisagreeBelowConfidence;
             case CsvPredictionRecordFilter.DisagreeAboveConfidence:
