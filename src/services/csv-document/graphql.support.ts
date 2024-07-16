@@ -81,6 +81,7 @@ export const QUERY_LIST_PREDICTIONS = gql`
             predictionUrl
             performanceSummary {
                 totalCount
+                grandTotal
                 confidenceThreshold
                 agreeAboveThreshold
                 agreeBelowThreshold
@@ -102,6 +103,7 @@ export interface CsvPredictionBackendResultModel {
     predictionValue: string
     confidence: number
     agree: boolean
+    skip: boolean
     data: string;
 }
 
@@ -122,6 +124,7 @@ export const QUERY_LIST_PREDICTION_RECORDS = gql`
                 predictionValue
                 confidence
                 agree
+                skip
                 data
             }
         }
@@ -139,6 +142,7 @@ export const MUTATION_CREATE_PREDICTION = gql`
             predictionUrl
             performanceSummary {
                 totalCount
+                grandTotal
                 confidenceThreshold
                 agreeAboveThreshold
                 agreeBelowThreshold

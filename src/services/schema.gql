@@ -2,6 +2,25 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""AI Model input"""
+type AIModelInput {
+  aliases: [String!]
+  formatterName: String
+  name: String!
+}
+
+"""AI Model"""
+type AiModel {
+  default: Boolean
+  deploymentId: String!
+  description: String
+  id: ID!
+  inputs: [AIModelInput!]!
+  label: String!
+  name: String!
+  skipField: String
+}
+
 """CSV Document"""
 type CsvDocument {
   description: String
@@ -88,6 +107,7 @@ type CsvPredictionResult {
   predictionId: String!
   predictionValue: String!
   providedValue: String
+  skip: Boolean
 }
 
 type Mutation {
@@ -135,12 +155,14 @@ type PerformanceSummary {
   correctedRecords: Float!
   disagreeAboveThreshold: Float!
   disagreeBelowThreshold: Float!
+  grandTotal: Float!
   totalCount: Float!
 }
 
 type Query {
   getCsvDocument(id: ID!): CsvDocument!
   getCsvPrediction(id: ID!): [CsvPrediction!]!
+  listAiModels: [AiModel!]!
   listCsvDocumentRecords(id: ID!, pagination: PaginationInput): PaginatedCsvDocumentRecords!
   listCsvDocuments(pagination: PaginationInput, status: CsvDocumentStatusFilter): PaginatedCsvDocuments!
   listCsvPredictionRecords(id: ID!, options: CsvPredictionRecordOptions, pagination: PaginationInput): PaginatedCsvPredictionResults!
