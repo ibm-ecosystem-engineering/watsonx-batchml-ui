@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "config.labels" . | nindent 4 }}
 data:
+  BACKEND_HOST: {{ required "API target url required" .Values.apiTarget | quote }}
   API_TARGET: {{ required "API target url required" .Values.apiTarget | quote }}
   GRAPHQL_TARGET: {{ required "GraphQL target url required" .Values.graphqlTarget | quote }}
   SOCKET_TARGET: {{ required "Socket target url required" .Values.socketTarget | quote }}
