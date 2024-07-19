@@ -8,15 +8,11 @@ const passport = require('passport');
 const WebAppStrategy = require("ibmcloud-appid").WebAppStrategy;
 
 const CALLBACK_URL = "/ibm/cloud/appid/callback";
-const LOGOUT_URL = "/ibm/cloud/appid/logout";
-const LOGOUT2_URL = "/logout";
-const LOGIN_URL = "/ibm/cloud/appid/login";
-const LOGIN2_URL = "/login";
+const LOGOUT_URL = "/logout";
+const LOGIN_URL = "/login";
 const LANDING_PAGE_URL = "/";
-const CHANGE_PASSWORD_URL = "/ibm/cloud/appid/change_password";
-const CHANGE_PASSWORD2_URL = "/change_password";
-const FORGOT_PASSWORD_URL = "/ibm/cloud/appid/forgot_password";
-const FORGOT_PASSWORD2_URL = "/forgot_password";
+const CHANGE_PASSWORD_URL = "/change_password";
+const FORGOT_PASSWORD_URL = "/forgot_password";
 
 const BACKEND_HOST = process.env.BACKEND_HOST || 'localhost:3000'
 const PORT = process.env.PORT || '8080'
@@ -72,25 +68,32 @@ const createServer = () => {
     });
 
     app.get(CALLBACK_URL, passport.authenticate(WebAppStrategy.STRATEGY_NAME));
-    app.get('/', passport.authenticate(WebAppStrategy.STRATEGY_NAME), (req, res) => {res.json(req.user); });
+    app.get(LOGIN_URL, passport.authenticate(WebAppStrategy.STRATEGY_NAME, {
+      successRedirect: LANDING_PAGE_URL,
+      forceLogin: true
+    }));
+
+    app.get('/protected', passport.authenticate(WebAppStrategy.STRATEGY_NAME), (req, res) => {res.json(req.user); });
   }
 
   const apiProxy = createProxyMiddleware({
-    target: BACKEND_HOST + '/api',
+    target: BACKEND_HOST,
+    pathRewrite: {'^/api': ''},
     changeOrigin: true,
+    logger: console,
   })
-  app.use('/api/*', apiProxy);
+  app.use('/api', apiProxy);
 
   const graphqlProxy = createProxyMiddleware({
     target: BACKEND_HOST + '/graphql',
     changeOrigin: true,
   })
-  app.use('/graphql/*', graphqlProxy);
   app.use('/graphql', graphqlProxy);
 
   const subscriptionProxy = createProxyMiddleware({
     target: BACKEND_HOST + '/subscription',
     changeOrigin: true,
+    logger: console,
     ws: true,
   })
   app.use('/subscription/*', subscriptionProxy);
