@@ -19,7 +19,8 @@ WORKDIR /opt/app-root/src/server
 
 COPY --chown=default:root ./server/* .
 
-RUN npm ci
+RUN npm ci && \
+    chown -R 1001:root /opt/app-root/src/.npm
 
 EXPOSE 8080
 
