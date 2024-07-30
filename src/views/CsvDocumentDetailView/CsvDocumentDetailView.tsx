@@ -4,7 +4,7 @@ import React, {ChangeEvent, useState} from 'react';
 import Optional from "optional-js";
 import {useAtom, useAtomValue, useSetAtom} from "jotai";
 import {useParams} from "react-router-dom";
-import {DataTableHeader, Loading, Select, SelectItem, Toggle} from "@carbon/react";
+import {Button, Column, DataTableHeader, Grid, Loading, Select, SelectItem, Toggle} from "@carbon/react";
 
 import {
     predictionRecordExcludeSkip,
@@ -28,6 +28,9 @@ import {
 import {first} from "../../utils";
 import {CsvUpdatedDocumentAddView} from "../CsvUpdatedDocumentAddView";
 import {PerformanceSummaryView} from "../PerformanceSummaryView";
+import {PredictionTile} from "./PredictionTile.tsx";
+import {Download, Upload} from "@carbon/icons-react";
+import dayjs from "dayjs";
 
 export interface CsvDocumentDetailViewProps {
 }
@@ -65,13 +68,21 @@ const CsvDocumentDetailViewInternal: React.FunctionComponent<CsvDocumentDetailVi
     const documentSummary: TableRow[] = [
         {label: 'Name:', value: document.name},
         {label: 'Description:', value: document.description},
-        {label: 'Original document:', value: (<a href={document.originalUrl}>Download</a>)},
         {label: 'Status:', value: document.status}
     ]
 
     return (<div>
-        <div style={{width: '600px', margin: '0 auto', paddingBottom: '20px'}}>
+        <div>
+            <Grid narrow>
+                <Column sm={8} md={8} lg={8} xlg={8}>
+            <div style={{width: '600px', margin: '0 auto', paddingBottom: '20px'}}>
             <SimpleTable rows={documentSummary} />
+            </div>
+                </Column>
+                <Column sm={8} md={8} lg={8} xlg={8} style={{align: 'right', textAlign: 'right'}}>
+            <Button kind="tertiary" renderIcon={Download} href={document.originalUrl}>Download original</Button>
+                </Column>
+            </Grid>
         </div>
         <PredictionSummaryView document={document} />
     </div>)
@@ -109,21 +120,35 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
             setSelectedPrediction(prediction)
         }
 
-        const predictionValues: TableRow[] = [
-            {label: 'Date:', value: parseISOString(prediction.date).toDateString()},
-            {label: 'Model:', value: prediction.model},
-            {label: 'Original document:', value: (<a href={prediction.predictionUrl}>download</a>)},
-            {label: 'Grand total:', value: prediction.performanceSummary?.grandTotal || 0},
-            {label: 'Total count:', value: prediction.performanceSummary?.totalCount || 0},
-            {label: 'Threshold:', value: (prediction.performanceSummary?.confidenceThreshold * 100 || 0) + '%'},
-            {label: 'Updates:', value: (<a href="#" onClick={() => showUpdate(prediction)}>upload updates</a>)},
-            {label: 'Performance:', value: (<PerformanceSummaryView data={prediction.performanceSummary} />)}
-        ]
+        const predictionRow = csvPredictionToRow(showUpdate)(prediction)
 
         return (<>
-            <div style={{width: '600px', margin: '0 auto'}}>
+            <div style={{width: '100%'}}>
                 <div style={{fontWeight: 'bold', fontSize: 'larger', textAlign: 'left', paddingBottom: '8px'}}>Prediction</div>
-                <SimpleTable rows={predictionValues} />
+                <Grid narrow>
+                    <Column sm={4} md={4} lg={4} xlg={4}>
+                        <PredictionTile label="Review required:" value={predictionRow.reviewCount} />
+                    </Column>
+                    <Column sm={4} md={4} lg={4} xlg={4}>
+                        <PredictionTile label="Grand total:" value={predictionRow.grandTotal} />
+                    </Column>
+                    <Column sm={4} md={4} lg={4} xlg={4}>
+                        <PredictionTile label="Total count:" value={predictionRow.totalCount} />
+                    </Column>
+                    <Column sm={4} md={4} lg={4} xlg={4}>
+                        <PredictionTile label="Confidence threshold:" value={predictionRow.confidenceThreshold} />
+                    </Column>
+                </Grid>
+                <div style={{width: '100%', paddingTop: '20px', paddingBottom: '10px'}}>
+                    <Grid narrow>
+                        <Column sm={4} md={4} lg={4} xlg={4} style={{textAlign: 'left'}}>
+                            {predictionRow.predictionUrl}
+                        </Column>
+                        <Column sm={{span: 4, offset: 12}} md={{span: 4, offset: 12}} lg={{span: 4, offset: 12}} xlg={{span: 4, offset: 12}} style={{textAlign: 'right'}}>
+                            {predictionRow.upload}
+                        </Column>
+                    </Grid>
+                </div>
             </div>
             <PredictionDetailView show={true} />
         </>)
@@ -147,11 +172,11 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
         key: 'totalCount',
         header: 'Record count'
     }, {
-        key: 'confidenceThreshold',
-        header: 'Threshold'
+        key: 'reviewCount',
+        header: 'Review required'
     }, {
-        key: 'performanceSummary',
-        header: 'Performance'
+        key: 'confidenceThreshold',
+        header: 'Confidence threshold'
     }, {
         key: 'upload',
         header: 'Upload updates'
@@ -189,17 +214,25 @@ const PredictionSummaryView: React.FunctionComponent<PredictionSummaryViewProps>
 
 const csvPredictionToRow = (uploadHandler: (data: CsvPredictionModel) => void) => {
     return (data: CsvPredictionModel) => {
+        const grandTotal = data.performanceSummary?.grandTotal || 0
+        const totalCount = data.performanceSummary?.totalCount || 0
+        const reviewCount = (data.performanceSummary?.agreeBelowThreshold + data.performanceSummary?.disagreeBelowThreshold)
+        const reviewCountPercentage = totalCount > 0 ? Math.round(100 * reviewCount / totalCount) : undefined
+
+        const reviewCountText = reviewCountPercentage ? `${reviewCount.toLocaleString()} (${reviewCountPercentage}%)` : `${reviewCount.toLocaleString()}`
+
         return Object.assign(
             {},
             data,
             {
-                date: parseISOString(data.date).toDateString(),
-                predictionUrl: (<a href={data.predictionUrl}>download</a>),
-                grandTotal: data.performanceSummary?.grandTotal || 0,
-                totalCount: data.performanceSummary?.totalCount || 0,
+                date: formatDate(parseISOString(data.date)),
+                predictionUrl: (<Button href={data.predictionUrl} renderIcon={Download}>Download predictions</Button>),
+                grandTotal: grandTotal.toLocaleString(),
+                totalCount: totalCount.toLocaleString(),
                 confidenceThreshold: (data.performanceSummary?.confidenceThreshold * 100 || 0) + '%',
+                reviewCount: reviewCountText,
                 performanceSummary: (<PerformanceSummaryView data={data.performanceSummary} />),
-                upload: (<a onClick={() => uploadHandler(data)}>upload updates</a>)
+                upload: (<Button onClick={() => uploadHandler(data)} renderIcon={Upload} kind="secondary">Upload updates</Button>)
             }
         )
     }
@@ -274,27 +307,34 @@ const PredictionDetailView: React.FunctionComponent<PredictionDetailViewProps> =
         setExcludeSkip(!excludeSkip)
     }
 
-    return (<div style={{paddingTop: '20px'}}>
-        <div style={{textAlign: 'left', fontWeight: 'bold'}}>Prediction results: {prediction.model} - {parseISOString(prediction.date).toDateString()}</div>
+    return (<div style={{paddingTop: '50px'}}>
+        <div style={{textAlign: 'left', fontWeight: 'bold'}}>Prediction results:</div>
+        <div style={{
+            fontSize: 'small',
+            textAlign: 'left',
+            paddingTop: '10px'
+        }}>{formatDate(parseISOString(prediction.date))} - {prediction.model}</div>
         <div style={{overflow: 'auto', paddingTop: '8px', paddingBottom: '8px'}}>
-        <div style={{width: '250px', float: 'left'}}>
-            <Select id={'prediction-filter'} value={filter} size="sm" labelText="Filter" onChange={handleFilterChange}>{CsvPredictionRecordFilterValues.values()
-                .map(val => (<SelectItem key={val.value} text={val.label} value={val.value} />))}</Select>
+            <div style={{width: '250px', float: 'left'}}>
+                <Select id={'prediction-filter'} value={filter} size="sm" labelText="Filter"
+                        onChange={handleFilterChange}>{CsvPredictionRecordFilterValues.values()
+                    .map(val => (<SelectItem key={val.value} text={val.label} value={val.value}/>))}</Select>
+            </div>
+            <div style={{width: '250px', float: 'right'}} onClick={handleExcludeSkipClick}>
+                <Toggle id="toggle-exclude-skip"
+                        aria-labelledby="Hide skip records"
+                        labelA="No"
+                        labelB="Yes"
+                        labelText="Hide skip records"
+                        disabled={false}
+                        readOnly={false}
+                        onToggle={handleExcludeSkipToggle}
+                        onClick={handleExcludeSkipClick}
+                        toggled={excludeSkip}/>
+            </div>
         </div>
-        <div style={{width:'250px', float: 'right'}} onClick={handleExcludeSkipClick}>
-            <Toggle id="toggle-exclude-skip"
-                    aria-labelledby="Hide skip records"
-                    labelA="No"
-                    labelB="Yes"
-                    labelText="Hide skip records"
-                    disabled={false}
-                    readOnly={false}
-                    onToggle={handleExcludeSkipToggle}
-                    onClick={handleExcludeSkipClick}
-                    toggled={excludeSkip} />
-        </div>
-        </div>
-        <DataTable headerData={headerData} rowData={rowData} totalCount={totalCount} page={page} pageSize={pageSize} setPage={setPage} />
+        <DataTable headerData={headerData} rowData={rowData} totalCount={totalCount} page={page} pageSize={pageSize}
+                   setPage={setPage}/>
     </div>)
 }
 
@@ -320,4 +360,12 @@ const valueToPercentage = (value: unknown): string => {
     }
 
     return num.toLocaleString(undefined,{style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 2})
+}
+
+const formatDate = (date?: Date): string => {
+    if (!date) {
+        return ''
+    }
+
+    return dayjs(date).format('YYYY-MM-DD')
 }
