@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/nodejs-18:1-70.1695740477
+FROM registry.access.redhat.com/ubi9/nodejs-18:1-118.1724037695
 
 WORKDIR /opt/app-root/src
 

@@ -1,15 +1,14 @@
-FROM registry.access.redhat.com/ubi9/nodejs-18:1-70.1695740477 AS builder
+FROM registry.access.redhat.com/ubi9/nodejs-18:1-118.1724037695 AS builder
 
 WORKDIR /opt/app-root/src
 
 COPY --chown=default:root . .
 
 RUN mkdir -p /opt/app-root/src/node_modules && \
-    ls -lA && \
     npm ci && \
     npm run build
 
-FROM registry.access.redhat.com/ubi9/nodejs-18:1-70.1695740477
+FROM registry.access.redhat.com/ubi9/nodejs-18:1-118.1724037695
 
 WORKDIR /opt/app-root/src
 
@@ -20,7 +19,8 @@ WORKDIR /opt/app-root/src/server
 COPY --chown=default:root ./server/* .
 
 RUN npm ci && \
-    chown -R 1001:root /opt/app-root/src/.npm
+    chown -R default:root /opt/app-root/src/.npm && \
+    chmod -R +w /opt/app-root/src/.npm
 
 EXPOSE 8080
 

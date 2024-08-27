@@ -13,25 +13,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        type: [nginx, express]
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Login to CNTK Quay
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_CNTK_USERNAME }}
@@ -51,6 +55,15 @@ jobs:
             RELEASE_TAG="main"
           fi
           
+          if [[ "${{ matrix.type }}" == "nginx" ]]; then
+            DEFAULT_IMAGE="true"
+          else
+            DEFAULT_IMAGE="false"
+          fi
+          
+          echo "Default image: ${DEFAULT_IMAGE}"
+          echo "default-image=${DEFAULT_IMAGE}" >> $GITHUB_OUTPUT
+          
           echo "Release tag: ${RELEASE_TAG}"
           echo "release-tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
           
@@ -62,21 +75,22 @@ jobs:
 
       - name: Docker CNTK meta
         id: cntk-meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ${{vars.IMAGE_BASE}}
+            ${{ vars.IMAGE_BASE }},enable=${{ steps.variables.outputs.default-image }}
+            ${{ vars.IMAGE_BASE }}-${{ matrix.type }}
           # Docker tags based on the following events/attributes
           tags: |
             type=raw,value=${{ steps.variables.outputs.release-tag }},enable=${{ steps.variables.outputs.release-tag-enabled }}
             type=raw,value=latest
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile
+          file: Dockerfile-${{ matrix.type }}
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.cntk-meta.outputs.tags }}
